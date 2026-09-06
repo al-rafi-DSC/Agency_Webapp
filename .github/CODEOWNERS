@@ -1,0 +1,28 @@
+# Code owners — review is required on the security-critical paths.
+#
+# Builder.io Fusion opens pull requests against this repo like any other
+# contributor. These entries make a human review mandatory when a pull request
+# touches anything that decides who can read or write student data.
+#
+# Enable "Require review from Code Owners" in branch protection for `main`,
+# otherwise this file is documentation rather than enforcement.
+
+# Default owner for everything.
+*                       @al-rafi-DSC
+
+# Access control and data layer — hand-written only (see AGENTS.md).
+/src/lib/supabase/       @al-rafi-DSC
+/src/proxy.ts            @al-rafi-DSC
+/supabase/               @al-rafi-DSC
+
+# Server Actions and route handlers run with the caller's privileges.
+/src/app/api/            @al-rafi-DSC
+
+# The guardrails themselves, and CI.
+/scripts/                @al-rafi-DSC
+/.github/                @al-rafi-DSC
+
+# Agent instructions — changing these changes what generated code is allowed to do.
+/AGENTS.md               @al-rafi-DSC
+/.builderrules           @al-rafi-DSC
+/CLAUDE.md               @al-rafi-DSC

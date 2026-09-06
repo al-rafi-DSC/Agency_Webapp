@@ -101,10 +101,35 @@ instead:
 
 ## Conventions
 
-_To be filled in once the codebase exists — naming conventions, folder
-structure, and commit style will go here._
+**`AGENTS.md` is the authoritative version** — it holds the file-ownership
+boundary between generated and hand-written code, and Builder.io Fusion reads
+it too (along with `.builderrules`). Summary:
+
+- Next.js 16 App Router (note: `middleware.ts` is now **`src/proxy.ts`**),
+  React 19, TypeScript strict, Tailwind v4, shadcn/ui (base-nova, neutral).
+- Pages are `async` Server Components that fetch and pass typed props down;
+  components in `src/components/**` are presentational — no data access.
+- Screens currently render from mock fixtures in `src/lib/mock/`. Real
+  Supabase queries get wired in by hand in Phase 3.
+- Imports via the `@/*` alias. Files `kebab-case`, components `PascalCase`,
+  DB columns `snake_case`.
+- Reference screen to copy: `src/app/(admin)/admin/students/page.tsx`.
+
+Hand-written only, never generated: `src/lib/supabase/**`, `src/proxy.ts`,
+`supabase/**`, `**/actions.ts`, `src/app/api/**`, `scripts/**`, `.github/**`,
+and any superadmin route. `npm run guardrails` enforces the security-relevant
+parts of that boundary mechanically; CI runs it on every PR.
 
 ## Commands
 
-_To be filled in once `package.json` exists — expect the usual `npm
-install`, `npm run dev`, `npm run build` pattern for a Next.js app._
+```bash
+npm install
+npm run dev          # http://localhost:3000
+npm run guardrails   # security boundary checks — also runs in CI
+npm run verify       # guardrails + typecheck + lint
+npm run build
+```
+
+`.env.local` ships with `NEXT_PUBLIC_UI_PREVIEW=true`, which renders every
+screen from mock fixtures with no Supabase project and no login — the intended
+mode for UI work. It is hard-gated off in production builds.

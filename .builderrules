@@ -1,0 +1,59 @@
+# Builder.io Fusion rules — Agency Workspace
+
+Internal tool for a study-abroad agency: an Admin sees all students and staff;
+Staff see only their assigned students. Handles personal student data and
+documents, so the boundaries below are hard requirements, not preferences.
+
+`AGENTS.md` in this repo is the full version of these rules. Read it too.
+
+## Fusion draws. Code decides.
+
+Build **presentational UI**. Data access, auth, and permissions are
+hand-written and out of scope for generated code.
+
+## Never create, edit, or delete these
+
+- `src/lib/supabase/**` — database and auth clients
+- `src/proxy.ts` — session handling and route protection
+- `supabase/**` — schema migrations and Row Level Security policies
+- `**/actions.ts` and `src/app/api/**` — Server Actions and route handlers
+- `scripts/**` and `.github/**` — CI guardrails
+- any route under a `superadmin` path
+
+If a request seems to need one of these, say so and stop. Do not work around it.
+
+## Never do this
+
+- Do not write Supabase queries, or import from `@supabase/supabase-js`,
+  `@supabase/ssr`, or `@/lib/supabase/**`. **Use the mock fixtures in
+  `@/lib/mock/students.ts`.**
+- Do not reference `SUPABASE_SERVICE_ROLE_KEY`. It bypasses all row-level
+  security and must never appear in application or component code.
+- Do not add authorization logic to a component. Do not treat a hidden column,
+  row, or nav link as access control — the database enforces that.
+- Do not add a link to any superadmin route. It is intentionally unlisted.
+- Do not add another UI or component library, and do not add the Builder SDK
+  (`@builder.io/*`) as a runtime dependency — this app renders its own UI.
+- Do not hard-code status strings. Import them from `@/types/db` and render the
+  `*_STATUS_LABELS` values. The status values are still **placeholders** pending
+  the owner's confirmation.
+
+## Always do this
+
+- Follow the worked example: `src/app/(admin)/admin/students/page.tsx` plus
+  `src/components/students/students-table.tsx`.
+- Pages are `async` Server Components that fetch and pass typed props down.
+  Components take props and render — not `async`, no data fetching.
+- Compose the existing shadcn/ui primitives in `src/components/ui/**`
+  (Tailwind v4, base-nova style, neutral base, lucide icons).
+- Type everything against `@/types/db`. No `any`.
+- Import via the `@/*` alias.
+- Give every list an empty state, and every awaiting route a `loading.tsx`.
+- Format dates with an explicit locale and `timeZone: "UTC"` to avoid
+  hydration mismatches.
+
+## Environment
+
+Run with `NEXT_PUBLIC_UI_PREVIEW=true` — screens render from mock fixtures with
+no Supabase project and no login. **No other environment variables are needed,
+and no real credentials should ever be added to this project's environment.**
