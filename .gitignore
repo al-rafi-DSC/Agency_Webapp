@@ -1,0 +1,61 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files — NEVER commit these.
+# SUPABASE_SERVICE_ROLE_KEY bypasses Row Level Security entirely; treat a
+# leaked one as a full database compromise. Real values belong in .env.local
+# locally and in Vercel's Environment Variables dashboard for production.
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# supabase (local dev stack)
+/supabase/.branches
+/supabase/.temp
+
+# codebase-memory graph artifact.
+# Untracked for now: the current index was built against an empty directory,
+# so it describes nothing. Once there is real code, re-index with
+# persistence=true and remove this entry if you want to share the graph.
+.codebase-memory/
+
+# python (leftover — this is a Next.js project)
+__pycache__/
+*.py[cod]
+venv/
+.venv/
