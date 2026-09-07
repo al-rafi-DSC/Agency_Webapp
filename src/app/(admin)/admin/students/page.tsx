@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { PlusIcon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
-import { StudentsTable } from "@/components/students/students-table";
-import { getMockStudents } from "@/lib/mock/students";
+import { StudentsExplorer } from "@/components/students/students-explorer";
+import { getMockStaff, getMockStudents } from "@/lib/mock/students";
+
+export const metadata: Metadata = { title: "Students" };
 
 /**
  * ★ REFERENCE SCREEN — Admin students pipeline (PRD §6, flow 4).
@@ -14,20 +21,48 @@ import { getMockStudents } from "@/lib/mock/students";
  * logged-in user so Row Level Security decides which rows come back. Nothing
  * below this line has to change — that is the point of keeping the components
  * presentational.
+ *
+ * `searchParams` is awaited (Next 16 hands it over as a Promise) purely so the
+ * dashboard can deep-link into this screen with a filter pre-applied.
  */
-export default async function AdminStudentsPage() {
-  const students = await getMockStudents();
+export default async function AdminStudentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ assignment?: string }>;
+}) {
+  const [students, staff, params] = await Promise.all([
+    getMockStudents(),
+    getMockStaff(),
+    searchParams,
+  ]);
 
   return (
     <>
       <PageHeader
         title="Students"
         description="Every student file, with the staff member assigned and current application status."
+        actions={
+          <Button
+            nativeButton={false}
+            render={
+              <Link href="/admin/students/new">
+                <PlusIcon />
+                Open student file
+              </Link>
+            }
+          />
+        }
       />
-      <StudentsTable
+
+      <StudentsExplorer
         students={students}
+        staff={staff}
         showAssignedStaff
-        emptyMessage="No student files opened yet."
+        studentBasePath="/admin/students"
+        initialAssignment={params.assignment ?? "all"}
+        createHref="/admin/students/new"
+        emptyTitle="No student files opened yet"
+        emptyDescription="Open the first student file to start tracking university applications."
       />
     </>
   );

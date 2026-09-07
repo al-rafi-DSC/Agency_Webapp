@@ -1,27 +1,31 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Metadata } from "next";
+
+import { AuthCard } from "@/components/auth/auth-card";
+import { LoginForm } from "@/components/auth/login-form";
+
+export const metadata: Metadata = { title: "Sign in" };
 
 /**
- * Placeholder login screen.
+ * Sign in (PRD §7).
  *
- * The form UI is Phase 2 work. The auth wiring behind it is hand-written
- * (Supabase Auth, email/password, invite-only — no public self-signup, per
- * PRD §7). This stub exists so the proxy's redirect target resolves.
+ * The form does not authenticate — see `login-form.tsx`. What matters on this
+ * page is what it does NOT offer: there is no "create an account" link, because
+ * accounts exist only by Admin invite. That is a product decision, so it is
+ * stated on the page rather than left as a missing button.
  */
 export default function LoginPage() {
   return (
-    <main className="flex flex-1 items-center justify-center px-6 py-16">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>Login form not built yet — Phase 2.</p>
-          <p>
-            Accounts are created by Admin invite only. There is no public
-            sign-up, by design.
-          </p>
-        </CardContent>
-      </Card>
-    </main>
+    <AuthCard
+      title="Sign in"
+      description="Use the email address your workspace invite was sent to."
+      footer={
+        <p>
+          No account? Accounts are created by the Admin — there is no public
+          sign-up. Ask them for an invite.
+        </p>
+      }
+    >
+      <LoginForm forgotPasswordHref="/forgot-password" />
+    </AuthCard>
   );
 }

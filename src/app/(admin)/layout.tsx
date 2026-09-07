@@ -1,33 +1,46 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { AppShell } from "@/components/shell/app-shell";
+import { getMockSessionUser, getMockStudents } from "@/lib/mock/students";
+import { buildSearchEntries } from "@/lib/mock/selectors";
+
 /**
- * Admin shell — navigation visible to the owner only.
+ * Admin shell — the owner's workspace (PRD §4.1: sees every student and every
+ * staff member).
  *
- * NOTE: the Superadmin route is deliberately absent from this nav and must stay
- * that way (PRD §4.3 — disclosed to the owner, but unlisted in the product
- * navigation). Do not add a link to it here.
+ * A Server Component: it fetches, hands typed props to `AppShell`, and does
+ * nothing else. `children` is passed through untouched, so the pages inside
+ * stay server-rendered even though the shell itself is a Client Component.
  *
- * Phase 3 adds a server-side role check in this layout. It will be defence in
- * depth on top of RLS, not a replacement for it.
+ * TWO THINGS TO KEEP TRUE HERE:
+ *
+ * 1. The Superadmin route is deliberately absent from `adminNav` and must stay
+ *    that way (PRD §4.3 — disclosed to the owner, unlisted in the product
+ *    navigation). Do not add a link to it.
+ *
+ * 2. Phase 3 adds a server-side role check in this layout. That will be defence
+ *    in depth ON TOP OF Row Level Security, never a replacement for it — the
+ *    database, not this file, decides which rows an account can read.
  */
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [user, students] = await Promise.all([
+    getMockSessionUser("admin"),
+    getMockStudents(),
+  ]);
+
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b">
-        <nav className="mx-auto flex w-full max-w-6xl items-center gap-6 px-6 py-4">
-          <Link href="/" className="text-sm font-semibold">
-            Agency Workspace
-          </Link>
-          <Link
-            href="/admin/students"
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            Students
-          </Link>
-        </nav>
-      </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</main>
-    </div>
+    <AppShell
+      navKey="admin"
+      user={user}
+      workspaceLabel="Admin"
+      homeHref="/admin"
+      searchEntries={buildSearchEntries(students, "/admin/students")}
+    >
+      {children}
+    </AppShell>
   );
 }
