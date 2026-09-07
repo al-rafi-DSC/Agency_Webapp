@@ -1,22 +1,32 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRightIcon, GraduationCapIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { homePathForRole } from "@/lib/auth/roles";
+import { getSessionUser } from "@/lib/auth/session";
+import { isUiPreview } from "@/lib/supabase/env";
 
 /**
  * Entry point.
  *
- * ── This is a preview switchboard, not a product screen ──────────────────────
- * In Phase 3 this route resolves the signed-in user server-side and redirects:
- * admin → /admin, staff → /staff, nobody → /login. It never renders a role
- * chooser, because a user does not pick their role — the database says what
- * they are, and RLS enforces it regardless of which URL they type.
+ * Resolves the signed-in account server-side and redirects: admin → /admin,
+ * staff → /staff, nobody → /login. It never renders a role chooser, because a
+ * user does not pick their role — the database says what they are, and RLS
+ * enforces it regardless of which URL they type.
  *
- * Until auth exists there is no session to redirect on, so the two workspaces
- * are linked here for preview. The links are labelled as preview so nobody
- * mistakes them for a role switch.
+ * ── The switchboard below survives, for preview mode only ────────────────────
+ * With `NEXT_PUBLIC_UI_PREVIEW=true` there is no session to redirect on, so the
+ * two workspaces are linked for UI work. `isUiPreview()` is hard-gated on a
+ * non-production NODE_ENV, so this branch cannot be reached from a deployed
+ * build even if the variable is set there by mistake.
  */
-export default function Home() {
+export default async function Home() {
+  if (!isUiPreview()) {
+    const user = await getSessionUser();
+    redirect(user ? homePathForRole(user.role) : "/login");
+  }
+
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6">
       <div className="w-full max-w-md text-center">

@@ -3,10 +3,10 @@
 /**
  * The signed-in user's menu in the topbar.
  *
- * Presentational. It renders the identity it is handed and links; it performs
- * no auth. "Sign out" navigates to /login rather than calling Supabase —
- * session handling is hand-written in Phase 3, and a button that pretends to
- * end a session it cannot end would be worse than an honest link.
+ * Presentational: it renders the identity it is handed. The one thing it does
+ * is sign out, and that goes through a POST to `/auth/sign-out` rather than a
+ * link — Next prefetches links on hover, so a GET that ends a session would
+ * sign people out for merely pointing at the menu.
  */
 
 import Link from "next/link";
@@ -32,9 +32,19 @@ const ROLE_LABELS: Record<SessionUser["role"], string> = {
   superadmin: "Superadmin",
 };
 
+const SIGN_OUT_FORM_ID = "sign-out-form";
+
 export function UserMenu({ user }: { user: SessionUser }) {
   return (
-    <DropdownMenu>
+    <>
+      <form
+        id={SIGN_OUT_FORM_ID}
+        action="/auth/sign-out"
+        method="post"
+        className="hidden"
+      />
+
+      <DropdownMenu>
       <DropdownMenuTrigger
         render={
           <Button
@@ -87,15 +97,24 @@ export function UserMenu({ user }: { user: SessionUser }) {
 
         <DropdownMenuSeparator />
 
+        {/*
+          Associated by id rather than by nesting: DropdownMenuContent is
+          rendered through a portal, so a <form> wrapped around this item would
+          live outside the document flow it appears to belong to. A button's
+          `form` attribute is resolved by id across the whole document, which
+          sidesteps that entirely.
+        */}
         <DropdownMenuItem
+          nativeButton
           render={
-            <Link href="/login">
+            <button type="submit" form={SIGN_OUT_FORM_ID}>
               <LogOutIcon className="size-4 text-muted-foreground" />
               Sign out
-            </Link>
+            </button>
           }
         />
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 }

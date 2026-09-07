@@ -1,75 +1,59 @@
 "use client";
 
 /**
- * Sign-in form — UI ONLY. It authenticates nobody.
- *
- * ── Why there is no auth call here ───────────────────────────────────────────
- * Signing in touches Supabase Auth and sets a session cookie, which is
- * hand-written server-side code under `src/lib/supabase/` plus `src/proxy.ts`
- * (AGENTS.md). A form component is the wrong place for it, and a half-wired one
- * would be worse than none.
+ * Sign-in form.
  *
  * ── Two things this must never grow into ─────────────────────────────────────
  * 1. A "Create account" link. PRD §7: accounts exist only by Admin invite.
  *    There is no public sign-up to link to.
  * 2. A message that distinguishes "no such account" from "wrong password".
  *    Both must read the same, or the form becomes a way to check whether an
- *    email address has an account here.
+ *    email address has an account here. The action returns a single string
+ *    from `@/lib/auth/messages` for every failure; this component only renders
+ *    whatever it is handed and never adds a reason of its own.
+ *
+ * The authentication itself lives in `src/app/login/actions.ts` — a Server
+ * Action, because signing in sets a session cookie and a Client Component
+ * cannot. Using a plain `action={…}` form rather than an onSubmit handler also
+ * means the flow still works with JavaScript disabled.
  */
 
-import type { FormEvent } from "react";
-import { useId, useState } from "react";
+import { useActionState, useId } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 
+import type { SignInState } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginForm({
+  action,
   forgotPasswordHref,
+  next,
 }: {
+  action: (state: SignInState, formData: FormData) => Promise<SignInState>;
   forgotPasswordHref: string;
+  /** Where to land after signing in. Re-validated server-side — see the action. */
+  next?: string;
 }) {
   const emailId = useId();
   const passwordId = useId();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (email.trim().length === 0 || password.length === 0) {
-      setError("Enter your email and password.");
-      return;
-    }
-
-    setError(null);
-
-    // ── PHASE 3 SEAM ─────────────────────────────────────────────────────────
-    // Replace with the hand-written sign-in path (Supabase Auth + session
-    // cookie). Any failure it reports must stay deliberately vague — see the
-    // file header.
-    toast.info("Sign-in is not wired up yet", {
-      description:
-        "Auth runs through Supabase and hand-written server code, which lands in Phase 3.",
-    });
-  }
+  const [state, formAction, pending] = useActionState(action, { error: null });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+    <form action={formAction} noValidate className="flex flex-col gap-4">
+      {next ? <input type="hidden" name="next" value={next} /> : null}
+
       <div className="space-y-2">
         <Label htmlFor={emailId}>Email</Label>
         <Input
           id={emailId}
+          name="email"
           type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
           placeholder="you@agency.com"
           autoComplete="email"
-          aria-invalid={Boolean(error)}
+          aria-invalid={Boolean(state.error)}
         />
       </div>
 
@@ -85,23 +69,22 @@ export function LoginForm({
         </div>
         <Input
           id={passwordId}
+          name="password"
           type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
           autoComplete="current-password"
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? "login-error" : undefined}
+          aria-invalid={Boolean(state.error)}
+          aria-describedby={state.error ? "login-error" : undefined}
         />
       </div>
 
-      {error ? (
+      {state.error ? (
         <p id="login-error" role="alert" className="text-sm text-destructive">
-          {error}
+          {state.error}
         </p>
       ) : null}
 
-      <Button type="submit" className="mt-1 w-full">
-        Sign in
+      <Button type="submit" className="mt-1 w-full" disabled={pending}>
+        {pending ? "Signing in…" : "Sign in"}
       </Button>
     </form>
   );

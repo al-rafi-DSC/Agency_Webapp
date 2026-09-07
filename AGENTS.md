@@ -34,6 +34,7 @@ Hiding a column, a row, or a nav link is **presentation**. It is not security.
 ### ⛔ Hand-written only — do not create, edit, or delete
 
 - `src/lib/supabase/**` — all database and auth clients
+- `src/lib/auth/**` — session resolution, role gates, auth messages
 - `src/proxy.ts` — session refresh and route protection
 - `supabase/**` — schema migrations and RLS policies
 - `**/actions.ts`, `src/app/api/**` — Server Actions and route handlers
@@ -52,10 +53,14 @@ Server Component  →  fetch  →  typed props  →  presentational component
 `src/app/(admin)/admin/students/page.tsx` is the worked example. Copy its shape.
 
 1. The page is an `async` Server Component. It fetches, and does nothing else.
-2. Fetching today means calling `getMock*` from `@/lib/mock/students`.
-   **Use the mock fixtures.** Do not write Supabase queries — the real data
-   layer is wired by hand in Phase 3, and the fetch call is the only line that
-   changes when it is.
+2. Fetching STUDENT DATA today means calling `getMock*` from
+   `@/lib/mock/students`. **Use the mock fixtures.** Do not write Supabase
+   queries — the real data layer is wired by hand, and the fetch call is the
+   only line that changes when it is.
+
+   The signed-in USER is different: that is real now. Get it from
+   `getSessionUser()` in `@/lib/auth/session` — never from `getMockSessionUser`,
+   and never by reading a role out of user metadata (see Secrets below).
 3. The component receives typed props from `@/types/db` and renders. It is not
    `async`, imports nothing from `@/lib/supabase/**`, and performs no I/O.
 4. Every list gets an explicit empty state. Every route that awaits data gets a
@@ -81,16 +86,28 @@ Server Component  →  fetch  →  typed props  →  presentational component
 
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — safe in the
   browser. Still fully governed by RLS, for **writes as well as reads**.
-- `SUPABASE_SERVICE_ROLE_KEY` — **bypasses RLS entirely.** Server-only, and
-  used only through `src/lib/supabase/admin.ts`. Never in a Client Component,
-  never in a `NEXT_PUBLIC_` variable, never in a Fusion environment.
+- `SUPABASE_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY` — **bypass RLS
+  entirely.** Server-only, and used only through `src/lib/supabase/admin.ts`.
+  Never in a Client Component, never in a `NEXT_PUBLIC_` variable, never in a
+  Fusion environment. Both names are enforced identically by the guardrails.
 - Never commit a `.env*` file. Never paste a real key into a chat or a prompt.
+
+## The role is not client-writable — do not read it from metadata
+
+A signed-in user can rewrite their own `raw_user_meta_data` through
+`supabase.auth.updateUser()` with nothing but the browser-side publishable key.
+Any check like `user.user_metadata.role === "admin"` is therefore a
+self-service promotion to admin for every staff account — and it looks
+completely ordinary in a diff, which is why `npm run guardrails` fails on it
+rather than trusting review to catch it.
+
+The role lives in `public.profiles`. Read the signed-in account through
+`getSessionUser()` in `@/lib/auth/session`, and nothing else.
 
 ## Open questions — do not invent answers
 
 `PRD.md` §10 lists these as unresolved. Surface the question; don't pick:
 
-- How students are assigned to staff.
 - The exact wording of `application_status` and `scholarship_status`. The
   unions in `src/types/db.ts` are **placeholders** — do not write a migration,
   enum, or CHECK constraint against them.

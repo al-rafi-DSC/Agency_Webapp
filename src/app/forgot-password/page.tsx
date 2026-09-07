@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { requestPasswordResetAction } from "@/app/forgot-password/actions";
 import { AuthCard } from "@/components/auth/auth-card";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
@@ -20,7 +21,7 @@ export default function ForgotPasswordPage() {
         </Link>
       }
     >
-      <ForgotPasswordForm />
+      <ForgotPasswordForm action={requestPasswordResetAction} />
     </AuthCard>
   );
 }

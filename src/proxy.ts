@@ -11,6 +11,13 @@
  * is enforced by Row Level Security in the database (PRD §7); a redirect here
  * only decides what gets rendered, never what data a query may return.
  *
+ * ── What this file deliberately does NOT do ──────────────────────────────────
+ * It does not check roles. Role routing lives in the layouts and in `/`, which
+ * can read `profiles.role` — the authority. Doing it here would mean either a
+ * database round-trip on every single request, or trusting a JWT claim that
+ * drifts out of step with the table the moment an Admin changes someone's
+ * role. Neither is worth it to save one server render.
+ *
  * Hand-written and off-limits to generated UI work — see AGENTS.md.
  */
 
@@ -70,12 +77,18 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && pathname === "/login") {
-    const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = "/";
-    homeUrl.search = "";
-    return NextResponse.redirect(homeUrl);
-  }
+  // NOTE: signing an already-authenticated visitor away from /login is done by
+  // the login PAGE, not here, and that is deliberate.
+  //
+  // This function can only ask Supabase Auth "is this cookie valid?". The rest
+  // of the app asks a different and stricter question through
+  // `getSessionUser()`: valid cookie AND a profile row AND status = 'active'.
+  // A departed staff member holding an unexpired access token answers yes to
+  // the first and no to the second.
+  //
+  // If both places redirected, those two answers would disagree and bounce the
+  // browser between /login and / forever. One source of truth, one redirect:
+  // the page, which can read the profile.
 
   return response;
 }
