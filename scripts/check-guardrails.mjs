@@ -16,8 +16,14 @@ import { join, relative, sep } from "node:path";
 const ROOT = process.cwd();
 const SRC = join(ROOT, "src");
 
-/** Only this file may reference the service role key. */
-const SERVICE_ROLE_ALLOWLIST = ["src/lib/supabase/admin.ts"];
+/**
+ * Only this file may reference a privileged key. Supabase issues these in two
+ * generations — `sb_secret_…` (SUPABASE_SECRET_KEY) and the legacy
+ * `service_role` JWT (SUPABASE_SERVICE_ROLE_KEY) — and both bypass Row Level
+ * Security completely, so both names are treated identically here.
+ */
+const SECRET_KEY_ALLOWLIST = ["src/lib/supabase/admin.ts"];
+const SECRET_KEY_NAMES = ["SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY"];
 
 /** Modules a Client Component must never import. */
 const SERVER_ONLY_MODULES = [
@@ -64,21 +70,23 @@ for (const file of files) {
   const rel = relative(ROOT, file).split(sep).join("/");
   const source = readFileSync(file, "utf8");
 
-  // 1. The service role key bypasses RLS entirely. One file may name it.
-  if (source.includes("SUPABASE_SERVICE_ROLE_KEY") && !SERVICE_ROLE_ALLOWLIST.includes(rel)) {
-    report(
-      rel,
-      "service-role-key",
-      `SUPABASE_SERVICE_ROLE_KEY bypasses Row Level Security. Reference it only in ${SERVICE_ROLE_ALLOWLIST.join(", ")}.`,
-    );
+  // 1. A privileged key bypasses RLS entirely. One file may name it.
+  for (const keyName of SECRET_KEY_NAMES) {
+    if (source.includes(keyName) && !SECRET_KEY_ALLOWLIST.includes(rel)) {
+      report(
+        rel,
+        "secret-key",
+        `${keyName} bypasses Row Level Security. Reference it only in ${SECRET_KEY_ALLOWLIST.join(", ")}.`,
+      );
+    }
   }
 
   // 2. A NEXT_PUBLIC_ alias would ship the key to the browser.
-  if (/NEXT_PUBLIC_[A-Z_]*SERVICE_ROLE/.test(source)) {
+  if (/NEXT_PUBLIC_[A-Z_]*(SERVICE_ROLE|SECRET)/.test(source)) {
     report(
       rel,
-      "service-role-key",
-      "A NEXT_PUBLIC_ variable is inlined into the browser bundle. The service role key must never be one.",
+      "secret-key",
+      "A NEXT_PUBLIC_ variable is inlined into the browser bundle. A key that bypasses RLS must never be one.",
     );
   }
 
@@ -108,7 +116,27 @@ for (const file of files) {
     );
   }
 
-  // 5. Components stay presentational — data access belongs in pages/actions.
+  // 5. The role must never be read out of user metadata.
+  //
+  // A signed-in user can rewrite their own raw_user_meta_data through
+  // supabase.auth.updateUser() with nothing but the browser-side publishable
+  // key. Any authorisation decision made from that field is a self-service
+  // promotion to admin — and the code that does it
+  // (`user.user_metadata.role === "admin"`) looks perfectly ordinary in a diff,
+  // which is exactly why it is caught here rather than at review.
+  //
+  // The role lives in public.profiles. Read it through
+  // `@/lib/supabase/session` or `@/lib/auth/session`.
+  if (/(?:user_metadata|raw_user_meta_data)(?:\s*(?:\.|\??\.|\[\s*["']|->>?\s*["']))\s*role/.test(source)) {
+    report(
+      rel,
+      "role-from-user-metadata",
+      "The role was read from user metadata, which the account holder can rewrite from the browser. " +
+        "Read it from public.profiles via @/lib/auth/session instead.",
+    );
+  }
+
+  // 6. Components stay presentational — data access belongs in pages/actions.
   const isComponent = rel.startsWith("src/components/");
   const isUiPrimitive = rel.startsWith("src/components/ui/");
   if (isComponent && !isUiPrimitive) {

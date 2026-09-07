@@ -7,6 +7,7 @@ to them, scoped at the database layer by Supabase Row Level Security.
 - **`PRD.md`** — what the product is, and what is still undecided.
 - **`CLAUDE.md`** — project context and constraints.
 - **`AGENTS.md`** — the rules AI agents work under. Read this before changing code.
+- **`supabaseauth.md`** — how authentication, roles and RLS actually work.
 
 ## Stack
 
@@ -46,10 +47,12 @@ src/
   components/              presentational components (props in, markup out)
     ui/                    shadcn/ui primitives
   lib/
-    mock/                  fixtures the UI is built against today
+    mock/                  student fixtures the UI is built against today
     supabase/              ⛔ hand-written data + auth clients
+    auth/                  ⛔ getSessionUser(), role gates, auth messages
   types/db.ts              domain types (PRD §5)
   proxy.ts                 ⛔ session refresh + fail-closed route protection
+supabase/                  ⛔ migrations, RLS policies, bootstrap seed
 scripts/check-guardrails.mjs  enforces the ⛔ boundaries in CI
 ```
 
@@ -59,5 +62,15 @@ The full boundary is in `AGENTS.md`.
 
 ## Status
 
-Phase 0 — scaffold and conventions. Screens run on mock data; the Supabase
-schema, RLS policies, and auth wiring are not built yet.
+**Identity is real; student data is not, yet.**
+
+Built: the `profiles` table with its RLS policies, sign-in, sign-out, password
+reset, Admin-invites-staff, and role-based routing. Details and the required
+Supabase dashboard settings are in `supabaseauth.md`; the migration and how to
+apply it are in `supabase/README.md`.
+
+Not built: the `students`, `university_applications` and
+`student_staff_assignments` tables and their policies. Every screen still reads
+fixtures from `src/lib/mock/`, so a real signed-in staff member sees sample
+students rather than their own caseload. The status vocabulary those tables
+need is still an open question (PRD §10).

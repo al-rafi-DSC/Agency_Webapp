@@ -28,18 +28,32 @@ import "server-only";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-export function createAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { requireSupabasePublicEnv } from "@/lib/supabase/env";
 
-  if (!url || !serviceRoleKey) {
+/**
+ * Accepts either generation of privileged key, preferring the newer one:
+ *
+ *   SUPABASE_SECRET_KEY          sb_secret_…  (current)
+ *   SUPABASE_SERVICE_ROLE_KEY    eyJ…         (legacy JWT)
+ *
+ * Both bypass RLS completely. `npm run guardrails` treats the two names
+ * identically: neither may be referenced outside this file, and neither may
+ * ever appear as a NEXT_PUBLIC_ variable.
+ */
+export function createAdminClient() {
+  const { url } = requireSupabasePublicEnv();
+  const secretKey =
+    process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!secretKey) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. " +
-        "The service role key is server-only and must never be exposed to the browser.",
+      "Missing SUPABASE_SECRET_KEY (or the legacy SUPABASE_SERVICE_ROLE_KEY). " +
+        "Copy it from Supabase → Settings → API Keys into .env.local and Vercel. " +
+        "It is server-only and must never be exposed to the browser.",
     );
   }
 
-  return createSupabaseClient(url, serviceRoleKey, {
+  return createSupabaseClient(url, secretKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }

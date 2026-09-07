@@ -46,13 +46,17 @@ Names only — actual values live in `.env.local` (gitignored) and in
 Vercel's Environment Variables dashboard for production. Never hardcode or
 commit real values, and never ask for them to be pasted into chat.
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — safe client-side; all access, **reads and
-  writes alike**, is governed by RLS policies. This key is not read-only: it
-  can insert, update, and delete anywhere a policy permits, so write policies
-  need the same scrutiny as read policies.
-- `SUPABASE_SERVICE_ROLE_KEY` — **server-only**. Bypasses RLS entirely.
-  Never in client components, never in anything shipped to the browser.
+- `NEXT_PUBLIC_SUPABASE_URL` — **origin only**, no `/rest/v1` suffix.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (new format, `sb_publishable_…`) or
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` (legacy JWT) — the code accepts either,
+  preferring the first. Safe client-side; all access, **reads and writes
+  alike**, is governed by RLS policies. Not read-only: it can insert, update,
+  and delete anywhere a policy permits, so write policies need the same
+  scrutiny as read policies.
+- `SUPABASE_SECRET_KEY` (new format, `sb_secret_…`) or
+  `SUPABASE_SERVICE_ROLE_KEY` (legacy JWT) — **server-only**, either name.
+  Bypasses RLS entirely. Never in client components, never in anything shipped
+  to the browser. `npm run guardrails` enforces both names identically.
 - `NEXT_PUBLIC_BUILDER_API_KEY` — Builder.io public key, safe client-side.
 - `BUILDER_PRIVATE_KEY` — only if Builder's write API is used; **server-only**.
 - Model provider key for the Vercel AI SDK — not yet decided (Phase 2,
@@ -88,16 +92,46 @@ Note: the specific status enum values (`application_status`,
 `scholarship_status`) are placeholders pending confirmation — don't treat
 them as final when writing migrations.
 
+## Auth — built, see `supabaseauth.md`
+
+Supabase Auth is wired up. The parts worth knowing before touching anything
+near it:
+
+- **The role lives in `public.profiles`, never in user metadata.** A signed-in
+  user can rewrite their own `raw_user_meta_data` with only the publishable
+  key, so a role stored there is a self-service promotion to admin. Guardrail
+  `role-from-user-metadata` fails the build if anything reads one.
+- `authenticated` has **no `UPDATE` privilege on `profiles.role`** — a
+  column-level grant, because an RLS policy governs rows, not columns.
+- Read the signed-in account through `getSessionUser()` in
+  `@/lib/auth/session`. Nothing else. It handles preview mode and refuses
+  deactivated accounts.
+- **One place decides "is this person signed in?"** — the pages. `src/proxy.ts`
+  only checks that a session exists; it never checks roles and never redirects
+  a signed-in visitor. Adding either back creates a redirect loop for
+  deactivated accounts.
+- Every auth failure message is in `@/lib/auth/messages`. Sign-in returns the
+  same string for a wrong password and an unknown address, on purpose — the
+  login page is public.
+- Student rows are **still fixtures**. Identity is real; the data layer is not.
+
 ## Known Open Decisions — don't assume answers
 
 Do not silently pick an answer for these while coding; surface the question
 instead:
 
-- Student-to-staff assignment rules (not yet defined).
 - Whether real payment processing is ever in scope, or fee tracking stays
   status-only.
 - Exact wording/values for application and scholarship status fields.
 - Which screens are built via Builder.io Fusion vs. hand-written directly.
+- The superadmin route's path (PRD §4.3 — unlisted but disclosed). The role
+  exists and has full access; the route does not.
+
+**Resolved 2026-09-07** — student-to-staff assignment: **many-to-many**
+(a `student_staff_assignments` join table, not a column on `students`),
+assigned manually by Admin. Staff departure raises an Admin alert for manual
+reassignment rather than cascading. Staff see only their assigned students —
+nothing about unassigned ones, not even names.
 
 ## Conventions
 

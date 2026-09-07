@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/shell/app-shell";
-import { getMockSessionUser, getMockStudents } from "@/lib/mock/students";
+import { requireRole } from "@/lib/auth/session";
+import { getMockStudents } from "@/lib/mock/students";
 import { buildSearchEntries } from "@/lib/mock/selectors";
 
 /**
@@ -12,15 +13,22 @@ import { buildSearchEntries } from "@/lib/mock/selectors";
  * nothing else. `children` is passed through untouched, so the pages inside
  * stay server-rendered even though the shell itself is a Client Component.
  *
- * TWO THINGS TO KEEP TRUE HERE:
+ * ── The role gate is defence in depth, not the boundary ──────────────────────
+ * `requireRole` decides whether this SCREEN renders. Row Level Security decides
+ * which ROWS any query returns, on every code path, whether or not this file
+ * exists (PRD §7). If a staff account somehow reached this layout, it would
+ * still read nothing it is not assigned — the gate exists so it gets a
+ * redirect instead of a page full of empty states.
  *
- * 1. The Superadmin route is deliberately absent from `adminNav` and must stay
- *    that way (PRD §4.3 — disclosed to the owner, unlisted in the product
- *    navigation). Do not add a link to it.
+ * ── Identity is real; student rows are not, yet ──────────────────────────────
+ * `requireRole` returns the signed-in account from Supabase. `getMockStudents`
+ * still returns fixtures — the student tables and their policies land with the
+ * data layer, not with auth. Swapping that one call is the whole change when
+ * they do.
  *
- * 2. Phase 3 adds a server-side role check in this layout. That will be defence
- *    in depth ON TOP OF Row Level Security, never a replacement for it — the
- *    database, not this file, decides which rows an account can read.
+ * The Superadmin route is deliberately absent from `adminNav` and must stay
+ * that way (PRD §4.3 — disclosed to the owner, unlisted in the product
+ * navigation). Do not add a link to it.
  */
 export default async function AdminLayout({
   children,
@@ -28,7 +36,10 @@ export default async function AdminLayout({
   children: ReactNode;
 }) {
   const [user, students] = await Promise.all([
-    getMockSessionUser("admin"),
+    requireRole(["admin", "superadmin"], {
+      previewAs: "admin",
+      next: "/admin",
+    }),
     getMockStudents(),
   ]);
 
