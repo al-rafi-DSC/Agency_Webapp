@@ -24,8 +24,10 @@ jobs:
       - name: Guardrails
         run: npm run guardrails
 
+      # next typegen writes the route types (LayoutProps, PageProps) into
+      # .next/types. A fresh checkout has no .next, so tsc alone fails.
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: Database permissions and yearly reports
         run: npm run test:database

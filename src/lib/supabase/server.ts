@@ -17,8 +17,11 @@ import { cookies } from "next/headers";
 import { requireSupabasePublicEnv } from "@/lib/supabase/env";
 
 export async function createClient() {
-  const { url, anonKey } = requireSupabasePublicEnv();
+  // cookies() first: it marks the route as per-request, so `next build` never
+  // prerenders a signed-in page. Checking env first made a build without
+  // Supabase variables (CI) fail on /admin instead of skipping it.
   const cookieStore = await cookies();
+  const { url, anonKey } = requireSupabasePublicEnv();
 
   return createServerClient(url, anonKey, {
     cookies: {
