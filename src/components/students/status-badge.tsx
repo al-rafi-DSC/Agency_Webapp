@@ -1,3 +1,4 @@
+import { statusLabel } from "@/types/db";
 /**
  * Status badges — presentational only.
  *
@@ -118,8 +119,8 @@ export function ApplicationStatusBadge({
   className?: string;
 }) {
   return (
-    <StatusPill tone={APPLICATION_STATUS_TONES[status]} className={className}>
-      {APPLICATION_STATUS_LABELS[status]}
+    <StatusPill tone={APPLICATION_STATUS_TONES[status] ?? "neutral"} className={className}>
+      {statusLabel(status, APPLICATION_STATUS_LABELS)}
     </StatusPill>
   );
 }
@@ -146,8 +147,8 @@ export function ScholarshipStatusBadge({
   className?: string;
 }) {
   return (
-    <StatusPill tone={SCHOLARSHIP_STATUS_TONES[status]} className={className}>
-      {SCHOLARSHIP_STATUS_LABELS[status]}
+    <StatusPill tone={SCHOLARSHIP_STATUS_TONES[status] ?? "neutral"} className={className}>
+      {statusLabel(status, SCHOLARSHIP_STATUS_LABELS)}
     </StatusPill>
   );
 }

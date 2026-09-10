@@ -62,7 +62,7 @@ export function StaffList({
                   {row.staff.full_name}
                 </p>
                 <p className="truncate text-sm text-muted-foreground">
-                  {row.staff.email}
+                  {row.staff.email}{row.staff.status === "inactive" ? " · Inactive" : ""}
                 </p>
               </div>
 

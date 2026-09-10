@@ -7,6 +7,11 @@ an AI canvas.
 
 Design rationale for everything in here: **`../supabaseauth.md`**.
 
+The Worker, Student and Yearly Summary implementation adds two migrations.
+Read **[WORKSPACE_SETUP.md](WORKSPACE_SETUP.md)** for their order, live-data setup,
+permissions and report definitions. The older identity instructions below still
+apply when setting up a fresh project.
+
 ```
 migrations/20260907120000_auth_identity.sql   identity layer — profiles, roles, RLS
 seed/bootstrap-admin.sql                      run once, by hand, to create the first Admin

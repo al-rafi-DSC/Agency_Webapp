@@ -1,15 +1,11 @@
 /**
  * Notes on a student file.
  *
- * ⚠ Notes are a UI FIXTURE. `PRD.md` §5 defines no notes table — this panel
- * exists to put the question in front of the owner ("do you want free-text
- * notes on a file, and who should see them?") rather than to assume the answer.
- * See `src/types/ui.ts`. Do not write a migration from this.
- *
- * Read-only: composing a note is a write, and writes go through a Server Action
- * that is hand-written in Phase 3.
+ * Renders the notes handed down by the server. The surrounding student page
+ * supplies a separate Server Action form for adding notes.
  */
 
+import type { ReactNode } from "react";
 import { MessageSquareIcon } from "lucide-react";
 
 import { formatDateTime, initials } from "@/lib/format";
@@ -17,13 +13,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/empty-state";
 import type { StudentNote } from "@/types/ui";
 
-export function NotesPanel({ notes }: { notes: StudentNote[] }) {
+export function NotesPanel({ notes, renderActions }: { notes: StudentNote[]; renderActions?: (note: StudentNote) => ReactNode }) {
   if (notes.length === 0) {
     return (
       <EmptyState
         icon={MessageSquareIcon}
         title="No notes yet"
-        description="Notes are read-only in this build — adding one needs the Server Action from Phase 3."
+        description="Add the first note to this student file."
         className="border-0 py-6"
       />
     );
@@ -50,6 +46,7 @@ export function NotesPanel({ notes }: { notes: StudentNote[] }) {
             <p className="text-sm leading-relaxed text-muted-foreground">
               {note.body}
             </p>
+            {renderActions?.(note)}
           </div>
         </li>
       ))}

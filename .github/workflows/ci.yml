@@ -27,6 +27,9 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Database permissions and yearly reports
+        run: npm run test:database
+
       - name: Lint
         run: npm run lint
 

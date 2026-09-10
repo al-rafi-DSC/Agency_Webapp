@@ -6,6 +6,26 @@ work in the codebase, not what the product does.
 
 ## Project
 
+### Data implementation update — 2026-09-10
+
+The user approved implementing Worker, Student and Yearly Summary sections in
+the existing Supabase database. The implementation now includes real readers
+in `src/lib/supabase/workspace.ts`, Server Actions in `src/app/workspace/actions.ts`,
+many-to-many assignment history, applications, notes, private documents and
+versioned yearly reports. Preview fixtures are used only in development preview.
+Worker rosters read actual profiles. Application/scholarship wording remains an
+owner choice and is configured in Settings; no placeholder labels are seeded.
+
+Read `supabase/WORKSPACE_SETUP.md` for migration order, permissions and report
+definitions. All five migrations are applied to the hosted `Agency_Webapp`
+project (as of 2026-09-11); a new migration still has to be applied deliberately.
+
+**Resolved 2026-09-11** — records are never deleted: Admin archives/restores
+students, applications, notes and documents (hidden from staff and new
+reports). Only Admin changes a student's file-opened date. Pages still load the
+whole workspace per request — deliberately deferred until ~1,000+ students. Older references below to a pending
+student data layer describe the previous state and are superseded by this update.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

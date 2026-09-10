@@ -52,7 +52,7 @@ src/
   components/              presentational components (props in, markup out)
     ui/                    shadcn/ui primitives
   lib/
-    mock/                  student fixtures the UI is built against today
+    mock/                  fixtures used only in development preview mode
     supabase/              ⛔ hand-written data + auth clients
     auth/                  ⛔ getSessionUser(), role gates, auth messages
   types/db.ts              domain types (PRD §5)
@@ -67,15 +67,17 @@ The full boundary is in `AGENTS.md`.
 
 ## Status
 
-**Identity is real; student data is not, yet.**
+Authentication and the Worker, Student and Yearly Summary data layers are
+implemented. Apply the new migrations before using real records:
+**[Workspace setup](supabase/WORKSPACE_SETUP.md)**.
 
-Built: the `profiles` table with its RLS policies, sign-in, sign-out, password
-reset, Admin-invites-staff, and role-based routing. Details and the required
-Supabase dashboard settings are in `supabaseauth.md`; the migration and how to
-apply it are in `supabase/README.md`.
+Workers have employment details; students support multiple assigned workers,
+editable university applications, notes and private documents. Yearly reports
+use database-recorded history and preserve approved snapshots with versioning.
+Application and scholarship labels are configured by the Admin in Settings;
+the illustrative preview statuses are not seeded into the database.
 
-Not built: the `students`, `university_applications` and
-`student_staff_assignments` tables and their policies. Every screen still reads
-fixtures from `src/lib/mock/`, so a real signed-in staff member sees sample
-students rather than their own caseload. The status vocabulary those tables
-need is still an open question (PRD §10).
+Production data reads use `src/lib/supabase/workspace.ts` with the signed-in
+account and database RLS. Development preview still uses sample fixtures and
+explicitly refuses writes. `npm run test:database` verifies migrations, access
+policies and report behavior locally; CI runs it alongside the existing checks.

@@ -1,4 +1,6 @@
 "use client";
+import { assignedWorkers, statusLabel } from "@/types/db";
+
 
 /**
  * Search, filter, sort and view-switch over a list of students.
@@ -32,7 +34,6 @@ import { EmptyState } from "@/components/empty-state";
 import { StudentCard } from "@/components/students/student-card";
 import { StudentsTable } from "@/components/students/students-table";
 import {
-  APPLICATION_STATUSES,
   APPLICATION_STATUS_LABELS,
   DECISION_STATUSES,
   DECISION_STATUS_LABELS,
@@ -138,7 +139,7 @@ export function StudentsExplorer({
       if (needle) {
         const haystack = [
           student.full_name,
-          student.assigned_staff?.full_name ?? "",
+          assignedWorkers(student).map((w) => w.full_name).join(" "),
           ...student.applications.map((a) => a.university_name),
         ]
           .join(" ")
@@ -164,13 +165,13 @@ export function StudentsExplorer({
         return false;
       }
 
-      if (assignment === UNASSIGNED && student.assigned_staff_id !== null) {
+      if (assignment === UNASSIGNED && assignedWorkers(student).some((w) => w.status !== "inactive")) {
         return false;
       }
       if (
         assignment !== ALL &&
         assignment !== UNASSIGNED &&
-        student.assigned_staff_id !== assignment
+        !assignedWorkers(student).some((w) => w.id === assignment)
       ) {
         return false;
       }
@@ -279,9 +280,9 @@ export function StudentsExplorer({
             onChange={setStatus}
             options={[
               { value: ALL, label: "Any application status" },
-              ...APPLICATION_STATUSES.map((value) => ({
+              ...[...new Set(students.flatMap((s) => s.applications.map((a) => a.application_status)))].map((value) => ({
                 value,
-                label: APPLICATION_STATUS_LABELS[value],
+                label: statusLabel(value, APPLICATION_STATUS_LABELS),
               })),
             ]}
           />

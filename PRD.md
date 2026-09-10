@@ -2,6 +2,14 @@
 
 Status: Draft v1 — for planning, not yet build-ready (see §10 Open Questions)
 
+Implementation update (2026-09-10): the owner approved Worker, Student and Yearly
+Summary sections, implemented together in the existing Supabase database. This
+extends the original v1 scope with yearly reports, notes and private documents.
+Assignment is many-to-many. Workflow status wording is owner-configured, rather
+than fixed to the illustrative enums below. Reporting periods have explicit
+start/end dates; no calendar-versus-academic-year assumption is made. See
+`supabase/WORKSPACE_SETUP.md` for the current schema, migration and report rules.
+
 ## 1. Problem Statement
 
 The agency owner currently runs a study-abroad/education agency solo. He is

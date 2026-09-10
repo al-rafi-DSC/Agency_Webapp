@@ -13,11 +13,10 @@
  */
 
 import {
-  APPLICATION_STATUSES,
+  statusLabel,
   APPLICATION_STATUS_LABELS,
   DECISION_STATUSES,
   DECISION_STATUS_LABELS,
-  SCHOLARSHIP_STATUSES,
   SCHOLARSHIP_STATUS_LABELS,
 } from "@/types/db";
 import type { DistributionSegment } from "@/components/dashboard/distribution-bar";
@@ -31,11 +30,11 @@ import {
 export function applicationSegments(
   breakdown: StatusBreakdown,
 ): DistributionSegment[] {
-  return APPLICATION_STATUSES.map((status) => ({
+  return Object.keys(breakdown.application).map((status) => ({
     key: status,
-    label: APPLICATION_STATUS_LABELS[status],
+    label: statusLabel(status, APPLICATION_STATUS_LABELS),
     value: breakdown.application[status],
-    colorClass: APPLICATION_MARK_CLASSES[status],
+    colorClass: APPLICATION_MARK_CLASSES[status] ?? "bg-primary",
   }));
 }
 
@@ -53,10 +52,10 @@ export function decisionSegments(
 export function scholarshipSegments(
   breakdown: StatusBreakdown,
 ): DistributionSegment[] {
-  return SCHOLARSHIP_STATUSES.map((status) => ({
+  return Object.keys(breakdown.scholarship).map((status) => ({
     key: status,
-    label: SCHOLARSHIP_STATUS_LABELS[status],
+    label: statusLabel(status, SCHOLARSHIP_STATUS_LABELS),
     value: breakdown.scholarship[status],
-    colorClass: SCHOLARSHIP_MARK_CLASSES[status],
+    colorClass: SCHOLARSHIP_MARK_CLASSES[status] ?? "bg-primary",
   }));
 }

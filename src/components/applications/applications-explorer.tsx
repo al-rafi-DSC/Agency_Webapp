@@ -1,4 +1,6 @@
 "use client";
+import { statusLabel } from "@/types/db";
+
 
 /**
  * Every university application across every student, in one table (PRD §4.1).
@@ -43,11 +45,9 @@ import {
   ScholarshipStatusBadge,
 } from "@/components/students/status-badge";
 import {
-  APPLICATION_STATUSES,
   APPLICATION_STATUS_LABELS,
   DECISION_STATUSES,
   DECISION_STATUS_LABELS,
-  SCHOLARSHIP_STATUSES,
   SCHOLARSHIP_STATUS_LABELS,
   type ApplicationStatus,
   type DecisionStatus,
@@ -134,7 +134,7 @@ export function ApplicationsExplorer({
         const haystack = [
           row.student.full_name,
           row.university_name,
-          row.assigned_staff?.full_name ?? "",
+          row.assigned_workers?.map((w) => w.full_name).join(" ") ?? row.assigned_staff?.full_name ?? "",
         ]
           .join(" ")
           .toLowerCase();
@@ -196,9 +196,9 @@ export function ApplicationsExplorer({
             onChange={setStatus}
             options={[
               { value: ALL, label: "Any status" },
-              ...APPLICATION_STATUSES.map((value) => ({
+              ...[...new Set(rows.map((r) => r.application_status))].map((value) => ({
                 value,
-                label: APPLICATION_STATUS_LABELS[value],
+                label: statusLabel(value, APPLICATION_STATUS_LABELS),
               })),
             ]}
           />
@@ -220,9 +220,9 @@ export function ApplicationsExplorer({
             onChange={setScholarship}
             options={[
               { value: ALL, label: "Any scholarship" },
-              ...SCHOLARSHIP_STATUSES.map((value) => ({
+              ...[...new Set(rows.map((r) => r.scholarship_status))].map((value) => ({
                 value,
-                label: SCHOLARSHIP_STATUS_LABELS[value],
+                label: statusLabel(value, SCHOLARSHIP_STATUS_LABELS),
               })),
             ]}
           />
@@ -294,7 +294,7 @@ export function ApplicationsExplorer({
                   {showAssignedStaff ? (
                     <TableCell className="whitespace-nowrap">
                       {row.assigned_staff ? (
-                        row.assigned_staff.full_name
+                        row.assigned_workers?.map((w) => w.full_name).join(", ") ?? row.assigned_staff.full_name
                       ) : (
                         <span className="text-muted-foreground">
                           Unassigned

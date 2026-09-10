@@ -33,8 +33,13 @@ export function StudentDetail({
   now,
   backHref,
   backLabel,
+  noticeSlot,
   assignSlot,
   buildStudentHref,
+  detailsSlot,
+  applicationsSlot,
+  notesSlot,
+  documentsSlot,
 }: {
   student: StudentWithApplications;
   notes: StudentNote[];
@@ -43,8 +48,14 @@ export function StudentDetail({
   now: string;
   backHref: string;
   backLabel: string;
+  /** Shown above the profile header, e.g. the archived-file notice. */
+  noticeSlot?: ReactNode;
   assignSlot?: ReactNode;
   buildStudentHref: (studentId: string) => string;
+  detailsSlot?: ReactNode;
+  applicationsSlot?: ReactNode;
+  notesSlot?: ReactNode;
+  documentsSlot?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -56,10 +67,13 @@ export function StudentDetail({
         {backLabel}
       </Link>
 
+      {noticeSlot}
+
       <StudentProfileHeader student={student} assignSlot={assignSlot} />
 
       <Tabs defaultValue="applications" className="gap-4">
         <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
+          {detailsSlot ? <TabsTrigger value="details">Details</TabsTrigger> : null}
           <TabsTrigger value="applications">
             Applications
             <span className="ml-1.5 text-xs text-muted-foreground tabular-nums">
@@ -77,7 +91,7 @@ export function StudentDetail({
         </TabsList>
 
         <TabsContent value="applications" className="flex flex-col gap-3">
-          {student.applications.length === 0 ? (
+          {applicationsSlot ?? (student.applications.length === 0 ? (
             <EmptyState
               icon={GraduationCapIcon}
               title="No universities added yet"
@@ -102,8 +116,10 @@ export function StudentDetail({
                 ))}
               </div>
             </>
-          )}
+          ))}
         </TabsContent>
+
+        {detailsSlot ? <TabsContent value="details">{detailsSlot}</TabsContent> : null}
 
         <TabsContent value="activity">
           <div className="surface-panel p-4">
@@ -117,13 +133,13 @@ export function StudentDetail({
 
         <TabsContent value="notes">
           <div className="surface-panel p-4">
-            <NotesPanel notes={notes} />
+            {notesSlot ?? <NotesPanel notes={notes} />}
           </div>
         </TabsContent>
 
         <TabsContent value="documents">
           <div className="surface-panel p-4">
-            <DocumentsPanel />
+            {documentsSlot ?? <DocumentsPanel />}
           </div>
         </TabsContent>
       </Tabs>

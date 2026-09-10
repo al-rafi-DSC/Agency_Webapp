@@ -1,3 +1,5 @@
+import { assignedWorkers } from "@/types/db";
+import { statusLabel } from "@/types/db";
 /**
  * Students table — the reference screen component.
  *
@@ -68,10 +70,10 @@ function ApplicationChips({ student }: { student: StudentWithApplications }) {
         {student.applications.map((application) => (
           <span
             key={application.id}
-            title={`${application.university_name} — ${APPLICATION_STATUS_LABELS[application.application_status]}`}
+            title={`${application.university_name} — ${statusLabel(application.application_status, APPLICATION_STATUS_LABELS)}`}
             className={cn(
               "h-1.5 w-4 rounded-full",
-              APPLICATION_MARK_CLASSES[application.application_status],
+              APPLICATION_MARK_CLASSES[application.application_status] ?? "bg-primary",
             )}
           />
         ))}
@@ -146,7 +148,7 @@ export function StudentsTable({
                           </AvatarFallback>
                         </Avatar>
                         <span className="whitespace-nowrap">
-                          {student.assigned_staff.full_name}
+                          {assignedWorkers(student).map((w) => w.full_name + (w.status === "inactive" ? " (inactive)" : "")).join(", ")}
                         </span>
                       </span>
                     ) : (

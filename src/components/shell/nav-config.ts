@@ -15,6 +15,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   FileTextIcon,
+  CalendarDaysIcon,
   LayoutDashboardIcon,
   SettingsIcon,
   UsersIcon,
@@ -59,7 +60,8 @@ export const adminNav: NavSection[] = [
   {
     label: "Workspace",
     items: [
-      { title: "Staff", href: "/admin/staff", icon: UserCogIcon },
+      { title: "Workers", href: "/admin/staff", icon: UserCogIcon },
+      { title: "Yearly summary", href: "/admin/reports", icon: CalendarDaysIcon },
       { title: "Settings", href: "/admin/settings", icon: SettingsIcon },
     ],
   },

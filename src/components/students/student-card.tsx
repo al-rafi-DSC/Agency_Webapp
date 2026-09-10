@@ -1,3 +1,5 @@
+import { assignedWorkers } from "@/types/db";
+import { statusLabel } from "@/types/db";
 /**
  * Card view of a student file — the alternative to the table on the students
  * list, and the shape used wherever a student appears outside a table.
@@ -67,10 +69,10 @@ export function StudentCard({
             {student.applications.map((application) => (
               <span
                 key={application.id}
-                title={`${application.university_name} — ${APPLICATION_STATUS_LABELS[application.application_status]}`}
+                title={`${application.university_name} — ${statusLabel(application.application_status, APPLICATION_STATUS_LABELS)}`}
                 className={cn(
                   "h-1.5 flex-1 rounded-full",
-                  APPLICATION_MARK_CLASSES[application.application_status],
+                  APPLICATION_MARK_CLASSES[application.application_status] ?? "bg-primary",
                 )}
               />
             ))}
@@ -91,7 +93,7 @@ export function StudentCard({
           <UserIcon className="size-3 text-muted-foreground" />
           {student.assigned_staff ? (
             <span className="truncate text-muted-foreground">
-              {student.assigned_staff.full_name}
+              {assignedWorkers(student).map((w) => w.full_name + (w.status === "inactive" ? " (inactive)" : "")).join(", ")}
             </span>
           ) : (
             <span className="font-medium text-warning-soft-foreground">

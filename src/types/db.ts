@@ -1,14 +1,14 @@
 /**
  * Domain types for Agency Workspace — mirrors PRD.md §5 (Data Model v1 sketch).
  *
- * These are hand-written for now. Once the Supabase schema exists they should be
- * replaced by (or checked against) `supabase gen types typescript`, so the
- * database stays the single source of truth.
+ * Hand-written read models used by both the live data adapter and preview.
+ * SQL schema: supabase/migrations/20260910130000_workspace_data.sql.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * ⚠ PLACEHOLDER STATUS VALUES — PRD.md §10 lists the exact wording for
- * `application_status` and `scholarship_status` as an OPEN QUESTION. The unions
- * below are the PRD's illustrative set, not confirmed product vocabulary.
+ * `application_status` and `scholarship_status` wording as an OPEN QUESTION.
+ * The constants below are the preview's illustrative set, not live vocabulary.
+ * Real labels are configured by the Admin in workflow_statuses.
  * Do not write a database migration, a CHECK constraint, or a Postgres enum
  * against these values until the owner confirms them.
  * ─────────────────────────────────────────────────────────────────────────────
@@ -21,7 +21,8 @@ export const APPLICATION_STATUSES = [
   "submitted",
   "under_review",
 ] as const;
-export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
+/** Live labels are supplied by the admin's workflow catalog. Constants above are preview fixtures only. */
+export type ApplicationStatus = string;
 
 /** Confirmed in PRD §5.2 — Accepted / Rejected / Pending. */
 export const DECISION_STATUSES = ["pending", "accepted", "rejected"] as const;
@@ -34,7 +35,7 @@ export const SCHOLARSHIP_STATUSES = [
   "awarded",
   "denied",
 ] as const;
-export type ScholarshipStatus = (typeof SCHOLARSHIP_STATUSES)[number];
+export type ScholarshipStatus = string;
 
 export const USER_ROLES = ["admin", "staff", "superadmin"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
@@ -70,6 +71,10 @@ export interface Staff {
   role: UserRole;
   avatar_url: string | null;
   created_at: string;
+  status?: "active" | "inactive";
+  phone?: string;
+  joined_on?: string | null;
+  left_on?: string | null;
 }
 
 /** PRD §5.2 — one row per university a student applies to. */
@@ -90,6 +95,12 @@ export interface UniversityApplication {
   scholarship_status: ScholarshipStatus;
   created_at: string;
   updated_at: string;
+  application_status_id?: string | null;
+  scholarship_status_id?: string | null;
+  is_submitted?: boolean;
+  is_awarded?: boolean;
+  /** Set when an admin archives the application. Hidden from staff and new reports. */
+  archived_at?: string | null;
 }
 
 /** PRD §5.1 — a student file. */
@@ -102,10 +113,29 @@ export interface Student {
   /** Assigned manually by Admin in v1 — no auto-assignment (PRD §3). */
   assigned_staff_id: string | null;
   created_at: string;
+  file_number?: number;
+  email?: string;
+  phone?: string;
+  /** Set when an admin archives the file. Archived files are read-only. */
+  archived_at?: string | null;
 }
 
 /** A student joined with the data the list and detail screens actually render. */
 export interface StudentWithApplications extends Student {
   assigned_staff: Pick<Staff, "id" | "full_name" | "avatar_url"> | null;
+  /** Open applications only. Archived ones are in `archived_applications`. */
   applications: UniversityApplication[];
+  /** Only ever populated for admins — RLS hides archived applications from staff. */
+  archived_applications?: UniversityApplication[];
+  /** Real assignments are many-to-many. Singular fields above only support old fixtures. */
+  assigned_workers?: Pick<Staff, "id" | "full_name" | "avatar_url" | "status">[];
+}
+
+export function assignedWorkers(student: Pick<StudentWithApplications, "assigned_workers" | "assigned_staff">): NonNullable<StudentWithApplications["assigned_workers"]> {
+  return student.assigned_workers ?? (student.assigned_staff ? [student.assigned_staff] : []);
+}
+
+/** Preview values use the label maps; live catalog labels are already readable. */
+export function statusLabel(value: string, labels: Record<string, string>) {
+  return Object.hasOwn(labels, value) ? labels[value] : (value ? value.replaceAll("_", " ") : "Not set");
 }

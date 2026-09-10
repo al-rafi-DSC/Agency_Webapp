@@ -4,17 +4,9 @@
  *
  * WHY THIS FILE IS SEPARATE FROM `@/types/db`:
  *
- * `db.ts` mirrors PRD §5 and, once the Supabase schema exists, should be
- * replaced by generated types. Everything here is either a computed aggregate
- * (a dashboard statistic, a workload roll-up) or a fixture concept the PRD has
- * not committed to as a table. Keeping them apart means components can be typed
- * without importing from `@/lib/mock/**`, so Phase 3 swaps the data source with
- * no component edits, and nobody mistakes a dashboard tile for a schema
- * decision.
- *
- * ⚠ `ActivityEvent` and `StudentNote` are UI fixtures. The PRD does NOT define
- * an activity or notes table. Do not write a migration from these — raise the
- * question first.
+ * These shapes describe computed dashboard aggregates and joined display data.
+ * Live activity adapts application_history, and notes adapt student_notes.
+ * Preview fixtures implement the same interfaces without database access.
  *
  * Naming: record-shaped types (things that would be a database row) use
  * `snake_case` fields to match the DB convention. Computed aggregates use
@@ -39,7 +31,7 @@ export interface SessionUser {
   avatar_url: string | null;
 }
 
-/** ⚠ UI fixture — no confirmed table behind this. See file header. */
+/** Activity categories supported by the presentation layer. */
 export type ActivityKind =
   | "file_opened"
   | "student_assigned"
@@ -50,7 +42,7 @@ export type ActivityKind =
   | "admission_confirmed"
   | "note_added";
 
-/** ⚠ UI fixture — no confirmed table behind this. See file header. */
+/** Joined activity display record. */
 export interface ActivityEvent {
   id: string;
   kind: ActivityKind;
@@ -63,13 +55,14 @@ export interface ActivityEvent {
   occurred_at: string;
 }
 
-/** ⚠ UI fixture — no confirmed table behind this. See file header. */
+/** Note with the author name that the caller may see. */
 export interface StudentNote {
   id: string;
   student_id: string;
   author_name: string;
   body: string;
   created_at: string;
+  archived_at?: string | null;
 }
 
 /**
@@ -79,6 +72,7 @@ export interface StudentNote {
 export interface ApplicationRow extends UniversityApplication {
   student: { id: string; full_name: string };
   assigned_staff: Pick<Staff, "id" | "full_name"> | null;
+  assigned_workers?: Pick<Staff, "id" | "full_name" | "avatar_url" | "status">[];
 }
 
 /** A staff member with their caseload rolled up. */

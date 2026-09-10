@@ -11,48 +11,15 @@ import {
   applicationSegments,
   decisionSegments,
 } from "@/components/dashboard/status-segments";
-import { getMockActivityForStudents } from "@/lib/mock/activity";
-import {
-  getMockDashboardStatsForStaff,
-  getMockNeedsAttentionForStaff,
-} from "@/lib/mock/selectors";
-import {
-  MOCK_CURRENT_STAFF_ID,
-  MOCK_NOW,
-  getMockStudentsForStaff,
-} from "@/lib/mock/students";
+import { getDashboardStats, getNeedsAttention, getActivity, workspaceNow } from "@/lib/supabase/workspace";
 import { pluralize } from "@/lib/format";
 
 export const metadata: Metadata = { title: "My dashboard" };
 
-/**
- * Staff dashboard — the same shape as the Admin one, over one caseload
- * (PRD §4.2).
- *
- * Every figure is computed from the students this account was given. In Phase 3
- * that set comes back from an unfiltered query that RLS narrows, so these
- * numbers cannot silently include somebody else's student.
- */
+
 export default async function StaffDashboardPage() {
-  const [stats, attention, students] = await Promise.all([
-    getMockDashboardStatsForStaff(MOCK_CURRENT_STAFF_ID),
-    getMockNeedsAttentionForStaff(MOCK_CURRENT_STAFF_ID),
-    getMockStudentsForStaff(MOCK_CURRENT_STAFF_ID),
-  ]);
-
-  const activity = await getMockActivityForStudents(
-    students.map((student) => student.id),
-    8,
-  );
-
-  const awaitingDecision = students
-    .flatMap((student) => student.applications)
-    .filter(
-      (application) =>
-        application.decision_status === "pending" &&
-        (application.application_status === "submitted" ||
-          application.application_status === "under_review"),
-    ).length;
+  const [stats, attention, activity, now] = await Promise.all([getDashboardStats("staff"), getNeedsAttention("staff"), getActivity(undefined, "staff"), workspaceNow()]);
+  const awaitingDecision = stats.activeApplications;
 
   return (
     <>
@@ -74,7 +41,7 @@ export default async function StaffDashboardPage() {
           <StatTile
             label="Applications"
             value={stats.totalApplications}
-            hint={`${stats.activeApplications} submitted or under review`}
+            hint={`${stats.activeApplications} submitted and awaiting a decision`}
             icon={FileTextIcon}
           />
           <StatTile
@@ -94,7 +61,7 @@ export default async function StaffDashboardPage() {
 
         <Panel
           title="Needs attention"
-          description="Unconfirmed offers and applications that have not moved."
+          description="Unconfirmed offers on your caseload."
         >
           <AttentionList
             items={attention}
@@ -129,7 +96,7 @@ export default async function StaffDashboardPage() {
         >
           <ActivityFeed
             events={activity}
-            now={MOCK_NOW.toISOString()}
+            now={now}
             buildHref={(studentId) => `/staff/students/${studentId}`}
           />
         </Panel>

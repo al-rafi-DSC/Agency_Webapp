@@ -17,34 +17,27 @@ import {
   applicationSegments,
   decisionSegments,
 } from "@/components/dashboard/status-segments";
-import { getMockActivity } from "@/lib/mock/activity";
+import { getActivity } from "@/lib/supabase/workspace";
 import {
-  getMockDashboardStats,
-  getMockNeedsAttention,
-  getMockStaffWorkload,
-} from "@/lib/mock/selectors";
-import { MOCK_NOW } from "@/lib/mock/students";
+  getDashboardStats,
+  getNeedsAttention,
+  getStaffWorkload,
+} from "@/lib/supabase/workspace";
+import { workspaceNow } from "@/lib/supabase/workspace";
 import { pluralize } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-/**
- * Admin dashboard — PRD §2: full visibility into every student's status and
- * every staff member's workload, in one place.
- *
- * A Server Component that fetches and hands typed props down. Everything below
- * this line is presentational, so Phase 3 changes only the four `getMock*`
- * calls.
- */
+
 export default async function AdminDashboardPage() {
   const [stats, workload, attention, activity] = await Promise.all([
-    getMockDashboardStats(),
-    getMockStaffWorkload(),
-    getMockNeedsAttention(),
-    getMockActivity(8),
+    getDashboardStats(),
+    getStaffWorkload(),
+    getNeedsAttention(),
+    getActivity(),
   ]);
 
-  const now = MOCK_NOW.toISOString();
+  const now = await workspaceNow();
 
   return (
     <>
@@ -66,7 +59,7 @@ export default async function AdminDashboardPage() {
           <StatTile
             label="Active applications"
             value={stats.activeApplications}
-            hint={`of ${stats.totalApplications} total — submitted or under review`}
+            hint={`of ${stats.totalApplications} total — submitted and awaiting a decision`}
             icon={FileTextIcon}
             href="/admin/applications"
             linkLabel="All applications"
@@ -120,7 +113,7 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-4 lg:grid-cols-5">
           <Panel
             title="Needs attention"
-            description="Unconfirmed offers, unassigned files, and stalled applications."
+            description="Unconfirmed offers and files needing an active worker."
             className="lg:col-span-3"
           >
             <AttentionList items={attention} limit={5} />

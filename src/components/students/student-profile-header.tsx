@@ -1,3 +1,4 @@
+import { assignedWorkers } from "@/types/db";
 /**
  * Identity block at the top of a student file.
  *
@@ -59,6 +60,7 @@ export function StudentProfileHeader({
           <h1 className="truncate text-xl font-semibold tracking-tight">
             {student.full_name}
           </h1>
+          {student.file_number ? <p className="mt-1 text-sm text-muted-foreground">File ST-{String(student.file_number).padStart(6, "0")}</p> : null}
           <p className="text-sm text-muted-foreground">
             {student.applications.length === 0
               ? "No universities added yet"
@@ -79,7 +81,7 @@ export function StudentProfileHeader({
         <Meta icon={UserIcon} label="Assigned to">
           {assignSlot ??
             (student.assigned_staff ? (
-              student.assigned_staff.full_name
+              assignedWorkers(student).map((w) => w.full_name + (w.status === "inactive" ? " (inactive)" : "")).join(", ")
             ) : (
               <span className="text-muted-foreground">Unassigned</span>
             ))}

@@ -4,35 +4,26 @@ import { PlusIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
+import { Panel } from "@/components/panel";
 import { StudentsExplorer } from "@/components/students/students-explorer";
-import { getMockStaff, getMockStudents } from "@/lib/mock/students";
+import { ArchivedList } from "@/components/workspace/archived-list";
+import { MutationForm } from "@/components/workspace/mutation-form";
+import { getWorkers, getStudents, getArchivedStudents } from "@/lib/supabase/workspace";
+import { archiveRecordAction } from "@/app/workspace/actions";
+import { formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Students" };
 
-/**
- * ★ REFERENCE SCREEN — Admin students pipeline (PRD §6, flow 4).
- *
- * The shape every data screen should follow:
- *
- *   Server Component  →  fetch  →  pass typed props to a presentational component
- *
- * Right now the fetch is `getMockStudents()`. In Phase 3 that single line
- * becomes a Supabase query through `@/lib/supabase/server`, which runs as the
- * logged-in user so Row Level Security decides which rows come back. Nothing
- * below this line has to change — that is the point of keeping the components
- * presentational.
- *
- * `searchParams` is awaited (Next 16 hands it over as a Promise) purely so the
- * dashboard can deep-link into this screen with a filter pre-applied.
- */
+
 export default async function AdminStudentsPage({
   searchParams,
 }: {
   searchParams: Promise<{ assignment?: string }>;
 }) {
-  const [students, staff, params] = await Promise.all([
-    getMockStudents(),
-    getMockStaff(),
+  const [students, staff, archived, params] = await Promise.all([
+    getStudents(),
+    getWorkers(),
+    getArchivedStudents(),
     searchParams,
   ]);
 
@@ -40,7 +31,7 @@ export default async function AdminStudentsPage({
     <>
       <PageHeader
         title="Students"
-        description="Every student file, with the staff member assigned and current application status."
+        description="Every student file, with the workers assigned and current application status."
         actions={
           <Button
             nativeButton={false}
@@ -64,6 +55,31 @@ export default async function AdminStudentsPage({
         emptyTitle="No student files opened yet"
         emptyDescription="Open the first student file to start tracking university applications."
       />
+
+      {archived.length ? (
+        <Panel
+          title="Archived student files"
+          description="Hidden from staff, dashboards and new reports. Restore a file to make changes."
+          className="mt-5"
+        >
+          <ArchivedList
+            items={archived.map((student) => ({
+              id: student.id,
+              label: student.full_name,
+              href: `/admin/students/${student.id}`,
+              detail: student.archived_at ? `Archived ${formatDate(student.archived_at)}` : "Archived",
+              action: (
+                <MutationForm
+                  action={archiveRecordAction.bind(null, "student", student.id, false)}
+                  submitLabel="Restore"
+                  variant="outline"
+                  size="sm"
+                />
+              ),
+            }))}
+          />
+        </Panel>
+      ) : null}
     </>
   );
 }

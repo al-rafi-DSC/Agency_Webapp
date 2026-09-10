@@ -1,23 +1,18 @@
+import { createStudentAction } from "@/app/workspace/actions";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { StudentForm } from "@/components/students/student-form";
-import { MOCK_NOW, getMockStaff } from "@/lib/mock/students";
+import { workspaceNow, getWorkers } from "@/lib/supabase/workspace";
 
 export const metadata: Metadata = { title: "Open student file" };
 
-/**
- * Opening a student file (PRD §4.1 — Admin creates students).
- *
- * The date default is computed here, on the server, so the input does not
- * render differently depending on the viewer's timezone. In preview mode that
- * is the fixture clock; in Phase 3 it becomes the real one.
- */
+
 export default async function NewStudentPage() {
-  const staff = await getMockStaff();
-  const today = MOCK_NOW.toISOString().slice(0, 10);
+  const staff = await getWorkers();
+  const today = (await workspaceNow()).slice(0, 10);
 
   return (
     <>
@@ -35,7 +30,7 @@ export default async function NewStudentPage() {
       />
 
       <div className="max-w-2xl">
-        <StudentForm
+        <StudentForm action={createStudentAction}
           staff={staff}
           defaultFileOpenedAt={today}
           cancelHref="/admin/students"

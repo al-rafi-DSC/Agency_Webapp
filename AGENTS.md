@@ -53,10 +53,11 @@ Server Component  →  fetch  →  typed props  →  presentational component
 `src/app/(admin)/admin/students/page.tsx` is the worked example. Copy its shape.
 
 1. The page is an `async` Server Component. It fetches, and does nothing else.
-2. Fetching STUDENT DATA today means calling `getMock*` from
-   `@/lib/mock/students`. **Use the mock fixtures.** Do not write Supabase
-   queries — the real data layer is wired by hand, and the fetch call is the
-   only line that changes when it is.
+2. Fetch STUDENT DATA through the hand-written readers in
+   `@/lib/supabase/workspace` (`getStudents`, `getStudent`, etc.). These use
+   the signed-in client and RLS for real records, and use fixtures only in
+   development preview. Generated pages must not introduce their own queries
+   or import fixtures directly. Mutations are supplied as Server Action props.
 
    The signed-in USER is different: that is real now. Get it from
    `getSessionUser()` in `@/lib/auth/session` — never from `getMockSessionUser`,
@@ -108,9 +109,9 @@ The role lives in `public.profiles`. Read the signed-in account through
 
 `PRD.md` §10 lists these as unresolved. Surface the question; don't pick:
 
-- The exact wording of `application_status` and `scholarship_status`. The
-  unions in `src/types/db.ts` are **placeholders** — do not write a migration,
-  enum, or CHECK constraint against them.
+- The exact wording of application and scholarship statuses. The constants in
+  `src/types/db.ts` are **preview placeholders**. Live labels are set by the
+  Admin in `workflow_statuses`; never seed those placeholders as product policy.
 - Whether real payment processing is ever in scope (v1 tracks fee status only).
 
 ## Running it

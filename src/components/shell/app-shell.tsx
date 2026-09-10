@@ -98,6 +98,7 @@ export function AppShell({
   searchEntries,
   homeHref,
   workspaceLabel,
+  previewMode = false,
   children,
 }: {
   navKey: NavKey;
@@ -105,6 +106,7 @@ export function AppShell({
   searchEntries: SearchEntry[];
   homeHref: string;
   workspaceLabel: string;
+  previewMode?: boolean;
   children: ReactNode;
 }) {
   const nav = NAV_SECTIONS[navKey];
@@ -229,6 +231,7 @@ export function AppShell({
         </header>
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+          {previewMode ? <p role="status" className="mb-5 rounded-lg border bg-muted px-4 py-3 text-sm text-muted-foreground">Preview workspace · Sample records · Changes are not saved</p> : null}
           {children}
         </main>
       </div>
