@@ -14,8 +14,10 @@ to them, scoped at the database layer by Supabase Row Level Security.
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · shadcn/ui ·
 Supabase (Postgres, Auth, Storage) · Vercel · Builder.io Fusion for UI generation.
 
-Production runs on Vercel at `ituniconsultancy.com`. Hostinger provides the
-domain, DNS and business email (SMTP) for it — not the application runtime.
+Production runs on Vercel at `app.ituniconsultancy.com`. Hostinger provides the
+domain, DNS and business email (SMTP) for it — not the application runtime. The
+apex `ituniconsultancy.com` is an unrelated website belonging to the domain
+owner; leave it alone.
 
 ## Getting started
 

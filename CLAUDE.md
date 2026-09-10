@@ -13,9 +13,9 @@ through a per-university application pipeline. Full detail in `PRD.md`.
 ## Stack
 
 - **Next.js** (App Router) — deployed on **Vercel**, auto-deploy from `main`.
-  Production domain is **`ituniconsultancy.com`**, registered at Hostinger —
-  see "Domain & Email (Hostinger)" below. Vercel runs the app; Hostinger only
-  serves DNS and mailboxes.
+  Production domain is **`app.ituniconsultancy.com`** — a subdomain, not the
+  apex; the apex serves someone else's site. See "Domain & Email (Hostinger)"
+  below. Vercel runs the app; Hostinger only serves DNS and mailboxes.
 - **Supabase** — Postgres database, Auth, and Storage.
 - **Builder.io (Fusion)** — connected to this GitHub repo for AI-assisted UI
   generation/editing. It opens PRs against this repo — review them like any
@@ -32,11 +32,17 @@ PHP and static files, with no persistent Node process and no root access. It
 cannot run a Next.js server. Self-hosting would require a Hostinger VPS, which
 is a separate purchase and was not pursued (see Known Open Decisions).
 
-- **DNS** is managed in Hostinger (Domains → DNS / Nameservers). The apex is to
-  be pointed at Vercel — **not yet done**; the domain is currently unused, so no
-  existing site is at risk. When editing DNS, leave the `MX` and mail-related
-  `TXT` records alone — they belong to the mailboxes below, and removing them
-  silently breaks email.
+⚠️ **The apex `ituniconsultancy.com` is occupied.** The domain owner runs a
+live website there on that Premium Web Hosting plan. It is not ours to move,
+repoint, or replace. This workspace is a separate internal tool and lives on
+its own subdomain.
+
+- **DNS** is managed in Hostinger (Domains → DNS / Nameservers). Only one record
+  is ours: a `CNAME` on **`app`** pointing at Vercel — **not yet created**.
+  Everything else in that zone belongs to someone else's production site and
+  email. Do not touch the apex `A` record, the `www` record, or any `MX` or
+  mail-related `TXT` row. Changing the apex takes their website offline;
+  removing the mail rows silently breaks email on the domain.
 - **Email** is Hostinger **Premium Business Email** on the same domain, which
   supplies real SMTP (`smtp.hostinger.com`, port 465 SSL or 587 STARTTLS,
   username = the full address). This is what Supabase Auth's custom SMTP should
@@ -156,7 +162,8 @@ instead:
   exists and has full access; the route does not.
 
 **Resolved 2026-09-10** — hosting: the app **stays on Vercel**. Hostinger
-supplies the domain (`ituniconsultancy.com`) and business email only. Moving
+supplies the `app.ituniconsultancy.com` subdomain and business email only — the
+apex hosts a third party's live website and is out of scope. Moving
 the runtime to Hostinger was considered and ruled out — the account's Premium
 Web Hosting plan is shared hosting and cannot run a Next.js server. A Hostinger
 VPS would be required to self-host; that was not pursued, and reopening it is a

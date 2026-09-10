@@ -539,9 +539,10 @@ Code cannot do these. Nothing below involves pasting a secret into a chat.
       bundle by design — can create themselves an account.
 - [ ] Email provider enabled; "Confirm email" on.
 - [ ] **URL Configuration:** Site URL = the production URL,
-      `https://ituniconsultancy.com` (Vercel serves it; the domain is
-      registered at Hostinger). Redirect allowlist must include
-      `http://localhost:3000/**` and `https://ituniconsultancy.com/**`, or
+      `https://app.ituniconsultancy.com` (Vercel serves it; the domain is
+      registered at Hostinger, and the apex is an unrelated third-party site —
+      mind the `app.` prefix). Redirect allowlist must include
+      `http://localhost:3000/**` and `https://app.ituniconsultancy.com/**`, or
       invite and reset links bounce. Keep the `*.vercel.app` preview pattern
       allowlisted too if previews are used to test auth.
 - [ ] *Optional but recommended* — **Email Templates → Invite user**, replace

@@ -49,10 +49,12 @@ broken if you skip this step.
   bundle by design, and is not a secret — can create themselves an account.
   RLS would keep that account from reading anyone's students, but it should
   not exist at all.
-- **Authentication → URL Configuration.** Site URL = `https://ituniconsultancy.com`
-  — the production domain, served by Vercel and registered at Hostinger.
+- **Authentication → URL Configuration.** Site URL =
+  `https://app.ituniconsultancy.com` — the production subdomain, served by
+  Vercel. Note the `app.` prefix: the apex is a different, unrelated site.
   Redirect allowlist must include `http://localhost:3000/**` and
-  `https://ituniconsultancy.com/**`, or every invite and reset link bounces.
+  `https://app.ituniconsultancy.com/**`, or every invite and reset link
+  bounces.
 - **Custom SMTP.** The built-in mailer is capped near 2 emails/hour. Invites
   and password resets are not reliable until this is configured. Point it at
   the Hostinger Premium Business Email account on the domain:

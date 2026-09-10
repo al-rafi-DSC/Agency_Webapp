@@ -122,7 +122,8 @@ this time:
 
 - **Next.js** (App Router) — the application itself.
 - **Vercel** — hosting/deployment, auto-deploys from GitHub. Production runs
-  at `ituniconsultancy.com`.
+  at `app.ituniconsultancy.com`. The apex `ituniconsultancy.com` is a separate,
+  unrelated website owned by the domain holder and is not part of this project.
 - **Hostinger** — domain registrar and DNS for `ituniconsultancy.com`, plus
   Premium Business Email (SMTP) on that domain. Hosting only in the DNS and
   mailbox sense: the account's Premium Web Hosting plan is shared hosting and
