@@ -121,7 +121,12 @@ this time:
 ## 8. Tech Stack
 
 - **Next.js** (App Router) — the application itself.
-- **Vercel** — hosting/deployment, auto-deploys from GitHub.
+- **Vercel** — hosting/deployment, auto-deploys from GitHub. Production runs
+  at `ituniconsultancy.com`.
+- **Hostinger** — domain registrar and DNS for `ituniconsultancy.com`, plus
+  Premium Business Email (SMTP) on that domain. Hosting only in the DNS and
+  mailbox sense: the account's Premium Web Hosting plan is shared hosting and
+  cannot run a Next.js server, so the application itself stays on Vercel.
 - **GitHub** — source of truth repository.
 - **Supabase** — Postgres database, Auth (invite-only email/password,
   built-in reset flow), and Storage (student photos, documents).
@@ -142,7 +147,9 @@ Carried forward from the earlier planning discussion — still apply here:
   timeout, single-account access). Student photos + documents will hit the
   1GB storage cap before the database does.
 - **Email delivery:** custom SMTP (not Supabase's default limited mailer)
-  needed for invite and password-reset emails to be reliable.
+  needed for invite and password-reset emails to be reliable. Hostinger
+  Premium Business Email on `ituniconsultancy.com` provides this; it still
+  needs wiring into Supabase → Authentication → SMTP Settings.
 - **Maintenance:** lightweight uptime monitoring + error tracking, and a
   clear (if informal) understanding with the owner about response-time
   expectations, since this isn't a paid support contract.

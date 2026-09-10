@@ -49,11 +49,15 @@ broken if you skip this step.
   bundle by design, and is not a secret — can create themselves an account.
   RLS would keep that account from reading anyone's students, but it should
   not exist at all.
-- **Authentication → URL Configuration.** Site URL = the production Vercel URL.
+- **Authentication → URL Configuration.** Site URL = `https://ituniconsultancy.com`
+  — the production domain, served by Vercel and registered at Hostinger.
   Redirect allowlist must include `http://localhost:3000/**` and
-  `https://<production-domain>/**`, or every invite and reset link bounces.
+  `https://ituniconsultancy.com/**`, or every invite and reset link bounces.
 - **Custom SMTP.** The built-in mailer is capped near 2 emails/hour. Invites
-  and password resets are not reliable until this is configured.
+  and password resets are not reliable until this is configured. Point it at
+  the Hostinger Premium Business Email account on the domain:
+  `smtp.hostinger.com`, port 465 (SSL) or 587 (STARTTLS), username = the full
+  mailbox address. The password belongs in the Supabase dashboard only.
 
 ## Adding a table later
 

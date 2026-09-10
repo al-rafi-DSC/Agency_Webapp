@@ -13,12 +13,37 @@ through a per-university application pipeline. Full detail in `PRD.md`.
 ## Stack
 
 - **Next.js** (App Router) — deployed on **Vercel**, auto-deploy from `main`.
+  Production domain is **`ituniconsultancy.com`**, registered at Hostinger —
+  see "Domain & Email (Hostinger)" below. Vercel runs the app; Hostinger only
+  serves DNS and mailboxes.
 - **Supabase** — Postgres database, Auth, and Storage.
 - **Builder.io (Fusion)** — connected to this GitHub repo for AI-assisted UI
   generation/editing. It opens PRs against this repo — review them like any
   other contributor's PR, don't assume Fusion-generated code is automatically
   correct or automatically respects RLS (see Security Rules below).
 - **GitHub** — source of truth. Default branch is `main`.
+
+## Domain & Email (Hostinger)
+
+The domain `ituniconsultancy.com` and its mailboxes are at Hostinger. The
+application is not, and should not be planned onto it. The Hostinger plan on
+this account is **Premium Web Hosting** — shared managed hosting that serves
+PHP and static files, with no persistent Node process and no root access. It
+cannot run a Next.js server. Self-hosting would require a Hostinger VPS, which
+is a separate purchase and was not pursued (see Known Open Decisions).
+
+- **DNS** is managed in Hostinger (Domains → DNS / Nameservers). The apex is to
+  be pointed at Vercel — **not yet done**; the domain is currently unused, so no
+  existing site is at risk. When editing DNS, leave the `MX` and mail-related
+  `TXT` records alone — they belong to the mailboxes below, and removing them
+  silently breaks email.
+- **Email** is Hostinger **Premium Business Email** on the same domain, which
+  supplies real SMTP (`smtp.hostinger.com`, port 465 SSL or 587 STARTTLS,
+  username = the full address). This is what Supabase Auth's custom SMTP should
+  point at — see Constraints below.
+- Hostinger passwords follow the same rule as every other secret in this
+  project: never in the repo, never pasted into chat. The SMTP password goes
+  directly into the Supabase dashboard.
 
 ## Local Environment
 
@@ -74,6 +99,9 @@ These aren't hypothetical — they will actually bind on the current plan:
   finish well under 10s or move outside Vercel entirely.
 - Supabase's default auth mailer is capped around 2 emails/hour. Custom SMTP
   must be configured before invite/reset emails are relied on for real use.
+  The Hostinger Premium Business Email account on `ituniconsultancy.com` covers
+  this — configure it under Supabase → Authentication → SMTP Settings.
+  **Not yet wired up.**
 
 ## Security Rules
 
@@ -126,6 +154,13 @@ instead:
 - Which screens are built via Builder.io Fusion vs. hand-written directly.
 - The superadmin route's path (PRD §4.3 — unlisted but disclosed). The role
   exists and has full access; the route does not.
+
+**Resolved 2026-09-10** — hosting: the app **stays on Vercel**. Hostinger
+supplies the domain (`ituniconsultancy.com`) and business email only. Moving
+the runtime to Hostinger was considered and ruled out — the account's Premium
+Web Hosting plan is shared hosting and cannot run a Next.js server. A Hostinger
+VPS would be required to self-host; that was not pursued, and reopening it is a
+deliberate decision, not a default.
 
 **Resolved 2026-09-07** — student-to-staff assignment: **many-to-many**
 (a `student_staff_assignments` join table, not a column on `students`),

@@ -538,9 +538,12 @@ Code cannot do these. Nothing below involves pasting a secret into a chat.
       Until it is off, anyone with the publishable key — which is in the browser
       bundle by design — can create themselves an account.
 - [ ] Email provider enabled; "Confirm email" on.
-- [ ] **URL Configuration:** Site URL = the Vercel production URL. Redirect
-      allowlist must include `http://localhost:3000/**` and
-      `https://<production-domain>/**`, or invite and reset links bounce.
+- [ ] **URL Configuration:** Site URL = the production URL,
+      `https://ituniconsultancy.com` (Vercel serves it; the domain is
+      registered at Hostinger). Redirect allowlist must include
+      `http://localhost:3000/**` and `https://ituniconsultancy.com/**`, or
+      invite and reset links bounce. Keep the `*.vercel.app` preview pattern
+      allowlisted too if previews are used to test auth.
 - [ ] *Optional but recommended* — **Email Templates → Invite user**, replace
       `{{ .ConfirmationURL }}` with
       `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite&next=/reset-password`.
@@ -552,6 +555,10 @@ Code cannot do these. Nothing below involves pasting a secret into a chat.
       Builder.io environment, never into a chat.
 - [ ] **Custom SMTP.** The default mailer is capped near 2 emails/hour
       (`CLAUDE.md`). Invites and resets are unreliable until this is set.
+      Use the Hostinger Premium Business Email account on the domain:
+      host `smtp.hostinger.com`, port 465 (SSL) or 587 (STARTTLS), username =
+      the full mailbox address. Enter the password in the Supabase dashboard
+      only — never in the repo, never in a chat.
 - [ ] Note the free-tier pause: the project sleeps after 7 days idle.
 
 ## 9. Open questions
