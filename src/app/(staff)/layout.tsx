@@ -22,7 +22,8 @@ export default async function StaffLayout({
       navKey="staff"
       previewMode={isUiPreview()}
       user={user}
-      workspaceLabel="Staff"
+      // The signed-in worker's name; "Staff" only until an account has one.
+      workspaceLabel={user.full_name.trim() || "Staff"}
       homeHref="/staff"
       searchEntries={buildSearchEntries(students, "/staff/students")}
     >
