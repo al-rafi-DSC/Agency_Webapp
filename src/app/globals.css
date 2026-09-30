@@ -306,22 +306,29 @@
      plum #542A52, peach #FFB39A. Scoped by re-pointing the tokens on a wrapper,
      so the shared components need no changes. One fixed palette: it does not
      follow dark mode, because the page is sent to people outside the workspace
-     and should look the same for all of them. */
+     and should look the same for all of them.
+
+     Full-strength peach as the page background was too bright (owner,
+     2026-09-30). The page is now a pale peach-tinted cream, and the peach
+     itself is kept to small accents. */
   .theme-plum-peach {
-    --background: #ffb39a;
+    --background: #f9f0eb;
     --foreground: #2f1730;
-    --card: #fff8f4;
+    --card: #fffdfb;
     --card-foreground: #2f1730;
     --primary: #542a52;
-    --primary-foreground: #fff8f4;
-    --muted: #ffe6dc;
-    --muted-foreground: #6d4c6b;
-    --success-soft: #ffd9cc;
+    --primary-foreground: #fffdfb;
+    --muted: #f6e7e0;
+    --muted-foreground: #6d5a6c;
+    --success-soft: #ffe0d5;
     --success-soft-foreground: #542a52;
     --destructive: #b3261e;
-    --border: #ecc8ba;
-    --input: #d9aa99;
+    --border: #ecdcd4;
+    --input: #dcc8be;
     --ring: #542a52;
+  }
+  .theme-plum-peach .surface-panel {
+    border-top: 3px solid #ffb39a;
   }
 
   /* Shared surface for the stat tiles and panel cards, so every raised element
