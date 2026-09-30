@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -275,5 +275,48 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
 
     await db.query("insert into public.staff_registrations(full_name,email,phone,gender,address) select 'Filler', 'filler' || n || '@example.test', '555', 'other', 'Road' from generate_series(1,49) n");
     await asAnon(() => assert.rejects(db.query("select public.submit_staff_registration('One Too Many','overflow@example.test','555','male','Road')"), /cannot be taken/));
+  });
+
+  await t.test('a student form queues for the admin only; accepting opens the file, assigns workers and keeps the answers', async () => {
+    const answers = JSON.stringify([{ question: 'Full name', answer: 'Form Student' }, { question: 'Which country?', answer: 'Italy' }]);
+    async function asAnon(action) {
+      await db.exec('set role anon');
+      try { return await action(); } finally { await db.exec('reset role'); }
+    }
+    await asAnon(async () => {
+      await db.query("select public.submit_student_form('Form Student','form@example.test','555',$1::jsonb)", [answers]);
+      await db.query("select public.submit_student_form('Second Student','','',$1::jsonb)", [answers]);
+      await assert.rejects(db.query("select public.submit_student_form('x','','','{}'::jsonb)"), /between 1 and 100/);
+      await assert.rejects(db.query("select public.submit_student_form('x','','','[]'::jsonb)"), /between 1 and 100/);
+      await assert.rejects(db.query("select public.submit_student_form('x','','','[{\"question\":\"q\"}]'::jsonb)"), /question and an answer/);
+      await assert.rejects(db.query('select * from public.student_submissions'), /permission denied/);
+      await assert.rejects(db.query("insert into public.student_submissions(answers) values('[]')"), /permission denied/);
+      await assert.rejects(db.query('select public.dismiss_student_submission(gen_random_uuid())'), /permission denied/);
+    });
+    const [first, second] = (await db.query('select id from public.student_submissions order by submitted_at, full_name')).rows.map(r => r.id);
+    await as(workerA, async () => {
+      assert.equal(await scalar('select count(*) from public.student_submissions'), 0);
+      await assert.rejects(db.query("select public.accept_student_submission($1,'Form Student','','','2026-09-30','{}')",[first]), /Only an admin/);
+      await assert.rejects(db.query('select public.dismiss_student_submission($1)',[first]), /Only an admin/);
+    });
+    const studentsBefore = await scalar('select count(*) from public.students');
+    await as(admin, async () => {
+      assert.equal(await scalar('select count(*) from public.student_submissions'), 2);
+      await assert.rejects(db.query("select public.accept_student_submission($1,'Form Student','','','2026-09-30',$2::uuid[])",[first,[admin]]), /active staff/);
+    });
+    assert.equal(await scalar('select count(*) from public.students'), studentsBefore, 'a failed assignment opens no file');
+    const student = await as(admin, () => scalar("select public.accept_student_submission($1,'Form Student','form@example.test','555','2026-09-30',$2::uuid[])",[first,[workerA]]));
+    assert.equal(await scalar("select status from public.student_submissions where id=$1",[first]), 'accepted');
+    await as(workerA, async () => {
+      assert.equal(await scalar('select full_name from public.students where id=$1',[student]), 'Form Student');
+      assert.match(await scalar('select body from public.student_notes where student_id=$1',[student]), /Full name: Form Student\nWhich country\?: Italy/);
+    });
+    await as(admin, async () => {
+      await assert.rejects(db.query("select public.accept_student_submission($1,'Again','','','2026-09-30','{}')",[first]), /already handled/);
+      await db.query('select public.dismiss_student_submission($1)',[second]);
+      await assert.rejects(db.query('select public.dismiss_student_submission($1)',[second]), /already handled/);
+    });
+    await db.query("insert into public.student_submissions(answers) select $1::jsonb from generate_series(1,200)", [answers]);
+    await asAnon(() => assert.rejects(db.query("select public.submit_student_form('Over','','',$1::jsonb)", [answers]), /cannot be taken/));
   });
 });

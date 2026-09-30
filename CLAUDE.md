@@ -35,6 +35,13 @@ that email takes the submitted details. Migration
 `20260930100000_staff_registrations.sql` must be applied before the app code
 that reads it is deployed. Detail in `supabase/WORKSPACE_SETUP.md`.
 
+**Added 2026-09-30** — the agency's student Google Form feeds the workspace. An
+Apps Script on the form (`scripts/student-google-form.gs`, installed in Google
+by the owner) posts each response to `/api/student-form`, which needs no session
+and is treated as public. Responses queue in `student_submissions`; the Admin
+dashboard lists them, and "Review and assign" opens the student file with the
+chosen workers. Migration `20260930140000_student_submissions.sql`.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

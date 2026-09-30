@@ -31,6 +31,18 @@ export interface StaffRegistration {
   has_account: boolean;
 }
 
+/** A waiting response from the student Google Form. It is not a student file. */
+export interface StudentSubmission {
+  id: string;
+  /** Best guesses picked out of the answers; the Admin confirms them. "" when not found. */
+  full_name: string;
+  email: string;
+  phone: string;
+  /** Every question and answer, in form order. */
+  answers: { question: string; answer: string }[];
+  submitted_at: string;
+}
+
 export interface StudentDocument {
   id: string;
   name: string;
