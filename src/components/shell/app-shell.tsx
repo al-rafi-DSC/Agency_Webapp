@@ -20,7 +20,12 @@
 import { useCallback, useSyncExternalStore, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCapIcon, MenuIcon, PanelLeftIcon } from "lucide-react";
+import {
+  GraduationCapIcon,
+  LogOutIcon,
+  MenuIcon,
+  PanelLeftIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -159,6 +164,26 @@ export function AppShell({
     </Link>
   );
 
+  // A POST form, not a link — see `/auth/sign-out`. `iconOnly` is the collapsed
+  // desktop sidebar; the label stays available to screen readers.
+  const signOut = (iconOnly: boolean) => (
+    <form action="/auth/sign-out" method="post">
+      <Button
+        type="submit"
+        variant="ghost"
+        size={iconOnly ? "icon-sm" : "sm"}
+        title={iconOnly ? "Sign out" : undefined}
+        className={cn(
+          "text-muted-foreground",
+          iconOnly ? "mx-auto flex" : "w-full justify-start gap-2",
+        )}
+      >
+        <LogOutIcon />
+        <span className={cn(iconOnly && "sr-only")}>Sign out</span>
+      </Button>
+    </form>
+  );
+
   return (
     <div className="flex min-h-svh w-full">
       {/* Desktop sidebar */}
@@ -170,7 +195,8 @@ export function AppShell({
       >
         {brand}
         <SidebarNav sections={nav} collapsed={collapsed} />
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-1">
+          {signOut(collapsed)}
           <Tooltip>
             <TooltipTrigger
               render={
@@ -204,6 +230,7 @@ export function AppShell({
           </SheetDescription>
           {brand}
           <SidebarNav sections={nav} onNavigate={() => setMobileOpen(false)} />
+          <div className="mt-auto">{signOut(false)}</div>
         </SheetContent>
       </Sheet>
 
