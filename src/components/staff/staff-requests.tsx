@@ -7,19 +7,23 @@
  * panel only appears when there is something to do.
  */
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { UserPlusIcon } from "lucide-react";
 
 import { formatDate } from "@/lib/format";
+import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/panel";
 import { GENDER_LABELS, type StaffRegistration } from "@/types/workspace";
 
 export function StaffRequests({
   requests,
   actions,
+  buildHref = (requestId: string) => `/admin/staff/requests/${requestId}`,
   className,
 }: {
   requests: StaffRegistration[];
+  buildHref?: (requestId: string) => string;
   /** The controls for each request id. */
   actions: Record<string, ReactNode>;
   className?: string;
@@ -46,7 +50,12 @@ export function StaffRequests({
                 <UserPlusIcon className="size-3.5" />
               </span>
               <div className="min-w-0 space-y-0.5">
-                <p className="text-sm font-medium break-words">{request.full_name}</p>
+                <Link
+                  href={buildHref(request.id)}
+                  className="rounded text-sm font-medium break-words underline underline-offset-4 outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {request.full_name}
+                </Link>
                 <p className="text-sm break-all text-muted-foreground">
                   {request.email}
                   {` · ${request.phone} · ${GENDER_LABELS[request.gender]}`}
@@ -61,7 +70,15 @@ export function StaffRequests({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-start gap-2">{actions[request.id]}</div>
+            <div className="flex flex-wrap items-start gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                nativeButton={false}
+                render={<Link href={buildHref(request.id)}>View details</Link>}
+              />
+              {actions[request.id]}
+            </div>
           </li>
         ))}
       </ul>
