@@ -302,6 +302,28 @@
 }
 
 @layer components {
+  /* Plum and peach — the staff details form (/join) only. Owner's colours:
+     plum #542A52, peach #FFB39A. Scoped by re-pointing the tokens on a wrapper,
+     so the shared components need no changes. One fixed palette: it does not
+     follow dark mode, because the page is sent to people outside the workspace
+     and should look the same for all of them. */
+  .theme-plum-peach {
+    --background: #ffb39a;
+    --foreground: #2f1730;
+    --card: #fff8f4;
+    --card-foreground: #2f1730;
+    --primary: #542a52;
+    --primary-foreground: #fff8f4;
+    --muted: #ffe6dc;
+    --muted-foreground: #6d4c6b;
+    --success-soft: #ffd9cc;
+    --success-soft-foreground: #542a52;
+    --destructive: #b3261e;
+    --border: #ecc8ba;
+    --input: #d9aa99;
+    --ring: #542a52;
+  }
+
   /* Shared surface for the stat tiles and panel cards, so every raised element
      on a dashboard shares one shadow language instead of inventing its own. */
   .surface-panel {
