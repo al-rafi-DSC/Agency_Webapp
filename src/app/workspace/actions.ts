@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { dateField, emailField, optionalUuid, textField, urlField, uuid } from "@/lib/workspace/input";
 import { DECISION_STATUSES } from "@/types/db";
-import type { ActionState } from "@/types/workspace";
+import { isGender, type ActionState } from "@/types/workspace";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 type Result = ActionState & { id?: string };
@@ -95,8 +95,20 @@ export async function saveWorkerAction(workerId: string, _state: ActionState, da
   return mutate(true, async (client) => {
     const status = textField(data, "status", 20);
     if (status !== "active" && status !== "inactive") throw new Error("Choose an account status.");
+    const gender = textField(data, "gender", 20).replace("__unset", "");
+    if (gender && !isGender(gender)) throw new Error("Choose a gender.");
     const { error } = await client.rpc("save_worker", { p_worker_id: uuid(workerId), p_full_name: textField(data, "full_name", 200, 2),
-      p_phone: textField(data, "phone", 80), p_joined_on: dateField(data, "joined_on"), p_left_on: dateField(data, "left_on"), p_status: status });
+      p_phone: textField(data, "phone", 80), p_joined_on: dateField(data, "joined_on"), p_left_on: dateField(data, "left_on"), p_status: status,
+      p_gender: gender, p_address: textField(data, "address", 500) });
+    check(error);
+  });
+}
+
+/** "link" applies a staff-form request to the existing account with that email; "dismiss" closes it. */
+export async function resolveStaffRegistrationAction(id: string, action: "link" | "dismiss", _state: ActionState, _data: FormData): Promise<ActionState> {
+  void _state; void _data;
+  return mutate(true, async (client) => {
+    const { error } = await client.rpc("resolve_staff_registration", { p_id: uuid(id), p_action: action === "link" ? "link" : "dismiss" });
     check(error);
   });
 }

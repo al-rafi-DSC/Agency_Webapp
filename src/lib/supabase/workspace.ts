@@ -5,14 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { assignedWorkers, type Staff, type StudentWithApplications, type UniversityApplication } from "@/types/db";
 import type { ActivityEvent, StudentNote } from "@/types/ui";
-import type { StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
+import type { StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
 import { applicationRows, dashboardStats, needsAttention, staffWorkload } from "@/lib/workspace/selectors";
 
 type Profile = Staff & { status: "active" | "inactive" };
 type StudentRow = Omit<StudentWithApplications, "applications" | "archived_applications" | "assigned_workers" | "assigned_staff" | "assigned_staff_id">;
 type Application = UniversityApplication & { application_status_id: string | null; scholarship_status_id: string | null };
 type Assignment = { id: string; student_id: string; worker_id: string; assigned_at: string; ended_at: string | null };
-type WorkerDetails = { profile_id: string; phone: string; joined_on: string | null; left_on: string | null };
+type WorkerDetails = { profile_id: string; phone: string; gender: string; address: string; joined_on: string | null; left_on: string | null };
 type History = { id: string; application_id: string; student_id: string; actor_id: string | null; occurred_at: string; before_data: UniversityApplication | null; after_data: UniversityApplication };
 
 function databaseError(message: string): never {
@@ -106,6 +106,16 @@ export async function getArchivedStudents() {
 export async function getWorkers() { return (await readWorkspace()).workers; }
 export async function getWorker(id: string) { return (await getWorkers()).find((w) => w.id === id) ?? null; }
 export async function getWorkflowStatuses() { return (await readWorkspace()).statuses; }
+/** Waiting requests from the staff details form. RLS returns rows to admins only. */
+export async function getStaffRegistrations(): Promise<StaffRegistration[]> {
+  if (isUiPreview()) return [];
+  const client = await createClient();
+  const { data, error } = await client.from("staff_registrations").select("id,full_name,email,phone,gender,address,submitted_at")
+    .eq("status", "pending").order("submitted_at", { ascending: false });
+  if (error) databaseError(error.message);
+  const workers = await getWorkers();
+  return data.map((r) => ({ ...r, has_account: workers.some((w) => w.email.toLowerCase() === r.email) }));
+}
 export async function getStudentsForWorker(id: string) {
   return (await getStudents()).filter((s) => assignedWorkers(s).some((w) => w.id === id));
 }

@@ -26,6 +26,15 @@ reports). Only Admin changes a student's file-opened date. Pages still load the
 whole workspace per request — deliberately deferred until ~1,000+ students. Older references below to a pending
 student data layer describe the previous state and are superseded by this update.
 
+**Added 2026-09-30** — new staff send their name, phone, Gmail, gender and
+address at the `/join` form. It is unlisted (the Admin sends the link by hand;
+only the Workers page links to it) but needs no session, so treat it as public.
+It queues a request in `staff_registrations` and creates no account; the Admin
+dashboard lists waiting requests, and the account created in Supabase Auth for
+that email takes the submitted details. Migration
+`20260930100000_staff_registrations.sql` must be applied before the app code
+that reads it is deployed. Detail in `supabase/WORKSPACE_SETUP.md`.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.
@@ -58,7 +67,9 @@ repoint, or replace. This workspace is a separate internal tool and lives on
 its own subdomain.
 
 - **DNS** is managed in Hostinger (Domains → DNS / Nameservers). Only one record
-  is ours: a `CNAME` on **`app`** pointing at Vercel — **not yet created**.
+  is ours: a `CNAME` on **`app`** pointing at Vercel — **live since
+  2026-09-11**, serving `app.ituniconsultancy.com` over HTTPS with a valid
+  certificate. Do not recreate or repoint it.
   Everything else in that zone belongs to someone else's production site and
   email. Do not touch the apex `A` record, the `www` record, or any `MX` or
   mail-related `TXT` row. Changing the apex takes their website offline;

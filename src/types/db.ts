@@ -73,6 +73,9 @@ export interface Staff {
   created_at: string;
   status?: "active" | "inactive";
   phone?: string;
+  /** "" until set. Labels in GENDER_LABELS (`@/types/workspace`). */
+  gender?: string;
+  address?: string;
   joined_on?: string | null;
   left_on?: string | null;
 }

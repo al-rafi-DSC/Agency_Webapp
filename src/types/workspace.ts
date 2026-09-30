@@ -13,6 +13,24 @@ export interface WorkflowStatus {
   archived: boolean;
 }
 
+/** Mirrors the gender CHECK on `worker_details` and `staff_registrations`. */
+export const GENDER_LABELS = { male: "Male", female: "Female", other: "Other" } as const;
+export type Gender = keyof typeof GENDER_LABELS;
+export function isGender(value: string): value is Gender { return value in GENDER_LABELS; }
+
+/** A waiting request from the staff details form. It is not an account. */
+export interface StaffRegistration {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  gender: Gender;
+  address: string;
+  submitted_at: string;
+  /** A staff account with this email already exists, so the Admin can apply the details to it. */
+  has_account: boolean;
+}
+
 export interface StudentDocument {
   id: string;
   name: string;

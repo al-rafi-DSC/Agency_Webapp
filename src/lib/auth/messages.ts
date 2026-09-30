@@ -38,7 +38,22 @@ export const PASSWORDS_DO_NOT_MATCH =
 export const PASSWORD_UPDATE_FAILED =
   "That password could not be set. Request a new link and try again.";
 
-export const EMAIL_REQUIRED = "Enter the email address on your account.";
+/**
+ * The staff details form (/join) is unlisted but needs no session, so it is
+ * treated as public. Same confirmation whether or
+ * not the address already has an account or a waiting request.
+ */
+export const STAFF_REQUEST_RECEIVED =
+  "Your details were sent. The Admin will set up your account and tell you when you can sign in.";
+
+/** Every database refusal on /join, including the full queue. */
+export const STAFF_REQUEST_UNAVAILABLE =
+  "Your details could not be sent right now. Please contact the Admin directly.";
+
+export const STAFF_REQUEST_INCOMPLETE =
+  "Fill in every field: name, phone number, a valid Gmail address, gender and address.";
+
+export const EMAIL_REQUIRED ="Enter the email address on your account.";
 
 export const CREDENTIALS_REQUIRED = "Enter your email and password.";
 

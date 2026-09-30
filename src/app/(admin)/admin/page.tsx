@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { Metadata } from "next";
 import {
   BadgeCheckIcon,
@@ -17,7 +18,10 @@ import {
   applicationSegments,
   decisionSegments,
 } from "@/components/dashboard/status-segments";
-import { getActivity } from "@/lib/supabase/workspace";
+import { StaffRequests } from "@/components/staff/staff-requests";
+import { MutationForm } from "@/components/workspace/mutation-form";
+import { resolveStaffRegistrationAction } from "@/app/workspace/actions";
+import { getActivity, getStaffRegistrations } from "@/lib/supabase/workspace";
 import {
   getDashboardStats,
   getNeedsAttention,
@@ -30,11 +34,12 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 
 export default async function AdminDashboardPage() {
-  const [stats, workload, attention, activity] = await Promise.all([
+  const [stats, workload, attention, activity, staffRequests] = await Promise.all([
     getDashboardStats(),
     getStaffWorkload(),
     getNeedsAttention(),
     getActivity(),
+    getStaffRegistrations(),
   ]);
 
   const now = await workspaceNow();
@@ -47,6 +52,30 @@ export default async function AdminDashboardPage() {
       />
 
       <div className="flex flex-col gap-5">
+        <StaffRequests
+          requests={staffRequests}
+          actions={Object.fromEntries(
+            staffRequests.map((request) => [
+              request.id,
+              <Fragment key={request.id}>
+                {request.has_account ? (
+                  <MutationForm
+                    action={resolveStaffRegistrationAction.bind(null, request.id, "link")}
+                    submitLabel="Use these details"
+                    size="sm"
+                  />
+                ) : null}
+                <MutationForm
+                  action={resolveStaffRegistrationAction.bind(null, request.id, "dismiss")}
+                  submitLabel="Dismiss"
+                  variant="outline"
+                  size="sm"
+                />
+              </Fragment>,
+            ]),
+          )}
+        />
+
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatTile
             label="Students"

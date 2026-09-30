@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -219,5 +219,61 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
       assert.equal(await scalar('select count(*) from public.student_documents'), 1);
       assert.equal(await scalar('select count(*) from storage.objects'), 1);
     });
+  });
+
+  await t.test('the public staff form only queues a request; an admin account creation or link applies it', async () => {
+    const newWorker = '20000000-0000-4000-8000-000000000003';
+    async function asAnon(action) {
+      await db.exec('set role anon');
+      try { return await action(); } finally { await db.exec('reset role'); }
+    }
+    await asAnon(async () => {
+      await db.query("select public.submit_staff_registration('Typo Name',' New.Worker@Example.test ','555','male','Old Road')");
+      await db.query("select public.submit_staff_registration('New Worker','new.worker@example.test','555 0100','female','12 Example Road, Dhaka')");
+      await assert.rejects(db.query("select public.submit_staff_registration('X','new@example.test','555','male','Road')"), /full name/);
+      await assert.rejects(db.query("select public.submit_staff_registration('Someone','not-an-email','555','male','Road')"), /valid email/);
+      await assert.rejects(db.query("select public.submit_staff_registration('Someone','s@example.test','555','admin','Road')"), /gender/);
+      await assert.rejects(db.query("select public.submit_staff_registration('Someone','s@example.test','555','male','')"), /address/);
+      await assert.rejects(db.query('select * from public.staff_registrations'), /permission denied/);
+      await assert.rejects(db.query("insert into public.staff_registrations(full_name,email,phone,gender,address) values('Direct','direct@example.test','555','male','Road')"), /permission denied/);
+      await assert.rejects(db.query("select public.resolve_staff_registration(gen_random_uuid(),'dismiss')"), /permission denied/);
+    });
+    assert.equal(await scalar("select full_name from public.staff_registrations where status='pending'"), 'New Worker', 'a resend corrects the waiting request');
+    const request = await scalar('select id from public.staff_registrations');
+    await as(workerA, async () => {
+      assert.equal(await scalar('select count(*) from public.staff_registrations'), 0);
+      await assert.rejects(db.query("select public.resolve_staff_registration($1,'dismiss')",[request]), /Only an admin/);
+    });
+    assert.equal(await as(admin, () => scalar('select count(*) from public.staff_registrations')), 1);
+
+    await db.query('insert into auth.users(id,email) values($1,$2)', [newWorker, 'new.worker@example.test']);
+    const profile = (await db.query('select full_name, role::text from public.profiles where id=$1',[newWorker])).rows[0];
+    assert.deepEqual(profile, { full_name: 'New Worker', role: 'staff' });
+    assert.deepEqual((await db.query('select phone, gender, address from public.worker_details where profile_id=$1',[newWorker])).rows[0],
+      { phone: '555 0100', gender: 'female', address: '12 Example Road, Dhaka' });
+    assert.equal(await scalar("select profile_id from public.staff_registrations where status='linked'"), newWorker);
+
+    await asAnon(() => db.query("select public.submit_staff_registration('Worker Bee','workerb@example.test','777','male','Bee Street')"));
+    await asAnon(() => db.query("select public.submit_staff_registration('Nobody Yet','nobody@example.test','555','other','Road')"));
+    await asAnon(() => db.query("select public.submit_staff_registration('Not The Owner','owner@example.test','555','male','Road')"));
+    const pending = async (email) => scalar("select id from public.staff_registrations where email=$1 and status='pending'",[email]);
+    await as(admin, async () => {
+      await db.query("select public.resolve_staff_registration($1,'link')",[await pending('workerb@example.test')]);
+      await assert.rejects(db.query("select public.resolve_staff_registration($1,'link')",[await pending('nobody@example.test')]), /No staff account/);
+      await assert.rejects(db.query("select public.resolve_staff_registration($1,'link')",[await pending('owner@example.test')]), /No staff account/, 'the form never renames an admin');
+      await db.query("select public.resolve_staff_registration($1,'dismiss')",[await pending('nobody@example.test')]);
+    });
+    assert.equal(await scalar('select full_name from public.profiles where id=$1',[workerB]), 'Worker Bee');
+    assert.equal(await scalar('select phone from public.worker_details where profile_id=$1',[workerB]), '777');
+    await as(admin, () => db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active')",[workerB]));
+    assert.equal(await scalar('select address from public.worker_details where profile_id=$1',[workerB]), 'Bee Street', 'omitted gender/address are kept');
+    await as(admin, () => db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active','female','New Street')",[workerB]));
+    assert.deepEqual((await db.query('select gender, address from public.worker_details where profile_id=$1',[workerB])).rows[0], { gender: 'female', address: 'New Street' });
+    await as(workerA, () => assert.rejects(db.query("select public.save_worker($1,'Hacked','1',null,null,'active','male','x')",[workerB]), /Only an admin/));
+    assert.equal(await scalar('select full_name from public.profiles where id=$1',[admin]), 'Owner');
+    assert.equal(await scalar("select count(*) from public.staff_registrations where status='dismissed'"), 1);
+
+    await db.query("insert into public.staff_registrations(full_name,email,phone,gender,address) select 'Filler', 'filler' || n || '@example.test', '555', 'other', 'Road' from generate_series(1,49) n");
+    await asAnon(() => assert.rejects(db.query("select public.submit_staff_registration('One Too Many','overflow@example.test','555','male','Road')"), /cannot be taken/));
   });
 });

@@ -15,7 +15,11 @@ hosting, existing account roles, or passwords.
 5. Run `migrations/20260911090000_archive_and_open_date.sql` in the SQL Editor
    (archiving and the admin-only file-opened date — see below).
 
-**Hosted status:** all five migrations are applied to the `Agency_Webapp`
+6. Run `migrations/20260930100000_staff_registrations.sql` in the SQL Editor
+   (the public staff details form — see below). **Apply it before deploying
+   the app code that reads it**, or the Admin dashboard fails to load.
+
+**Hosted status:** the first five migrations are applied to the `Agency_Webapp`
 project (`hqyavenqhutmbiiusrhz`) as of 2026-09-11 and pass the check below.
 
 The new migrations are transactional, additive migrations, intended to run
@@ -67,6 +71,7 @@ bucket is private.
 | Section | Tables | Access |
 | --- | --- | --- |
 | Worker | existing `profiles`, new `worker_details` | Admin sees staff; staff see their own profile/details |
+| Staff requests | `staff_registrations` | Anyone with the unlisted link submits through one checked RPC; only Admin reads and resolves |
 | Student | `students`, `student_staff_assignments`, `university_applications`, `application_history`, `student_notes`, `student_documents` | Admin sees all; staff can access only currently assigned students |
 | Yearly Summary | `yearly_reports` | Admin / Superadmin only |
 | Shared vocabulary | `workflow_statuses` | Active users read; Admin manages through checked RPCs |
@@ -92,6 +97,23 @@ snapshots never change. Admins restore from the student page or from
 **Only an Admin can change a student's file-opened date**, because that date
 decides the reporting year a student counts as new. Staff still edit name,
 email, phone and photo; a trigger rejects a non-admin date change.
+
+**New staff send their details at `/join`** (owner request, 2026-09-30): name,
+phone number, Gmail address, gender and address, all required. The page is
+**unlisted** — nothing links to it except a line on the Admin's Workers page,
+and it is marked noindex; the Admin sends the link by hand. Unlisted is not
+protected: anyone who has the link can open it without signing in, so the
+database treats it as public. The form creates no account:
+`submit_staff_registration()` queues a row in `staff_registrations`, which only
+an Admin can read. The queue holds at most 50 waiting requests, one per email;
+sending again corrects the waiting one. The Admin dashboard lists waiting
+requests. When the Admin adds that email in Supabase → Authentication → Users,
+the signup trigger gives the new staff account the submitted details (name on
+`profiles`; phone, gender and address on `worker_details`) and closes the
+request. The Admin can edit them afterwards on the worker's page. If the account
+already existed, the Admin applies the details with **Use these details**, or
+closes the request with **Dismiss**. The form never sets a role and never
+changes an Admin account.
 
 Assignment records retain start/end timestamps. Removing a current assignment
 ends it; assigning the worker again creates another history row. A failed
