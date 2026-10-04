@@ -25,7 +25,7 @@ export default async function AdminLayout({
       navKey="admin"
       previewMode={isUiPreview()}
       user={user}
-      workspaceLabel="Admin"
+      workspaceLabel={user.role === "superadmin" ? "Superadmin" : "Admin"}
       homeHref="/admin"
       searchEntries={buildSearchEntries(students, "/admin/students")}
     >

@@ -79,7 +79,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
 
         <DropdownMenuSeparator />
 
-        {user.role === "admin" ? (
+        {user.role === "admin" || user.role === "superadmin" ? (
           <DropdownMenuItem
             render={
               <Link href="/admin/settings">
