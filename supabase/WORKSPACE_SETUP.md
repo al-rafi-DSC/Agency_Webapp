@@ -34,6 +34,28 @@ hosting, existing account roles, or passwords.
    drops the removed student Google Form's functions (the
    `student_submissions` table and its rows are kept).
 
+9. Run `migrations/20261004160000_applications_and_closing.sql` (application
+   details, the confirmed status labels, and closing a file — see below).
+   **Apply it before deploying the app code that uses it**: the new
+   application form writes columns this migration adds. It is additive, so the
+   previous app version keeps working after it is applied.
+
+## Application details, statuses and closing a file (2026-10-04)
+
+- New application columns: `preferred_subject`, `entrance_exam`,
+  `entrance_exam_date`, `scholarship_name`, `scholarship_link`,
+  `enrollment_fee_paid` (independent of `admission_confirmed`, which still
+  requires an accepted decision).
+- The owner's status labels are seeded into `workflow_statuses` (skipped if a
+  label already exists): Application — Complete, Waiting For University
+  Approval, Confirm (all `counts_as_submitted`); Scholarship — Complete,
+  Waiting For Approval, Confirm (`Confirm` is `counts_as_awarded`). University
+  decision is Pending, Approved (stored `accepted`) or Rejected.
+- `close_student_file(id, reason)`: admin or assigned staff, reason 3–2000
+  characters. `reopen_student_file(id)`: admin only. A closed file stays
+  visible to the same people but `can_write_student()` refuses every write,
+  for admins too. Each close/reopen also adds a note to the file.
+
 ## Student file fields and new-file notifications (2026-10-04)
 
 - **Name + Surname** are the editable columns (`first_name`, `surname`).

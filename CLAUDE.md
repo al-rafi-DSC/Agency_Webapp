@@ -42,6 +42,17 @@ notification on every admin's dashboard until that admin marks it as seen.
 Migration `20261004120000_student_file_details.sql` replaces `create_student()`
 — apply it right before deploying. Detail in `supabase/WORKSPACE_SETUP.md`.
 
+**Added 2026-10-04 (later)** — applications also record preferred subject,
+entrance exam + booked date, scholarship name + link, and "enrollment fee paid"
+as its own tick box. **Status wording is resolved:** Application — Complete /
+Waiting For University Approval / Confirm (all count as submitted);
+Scholarship — Complete / Waiting For Approval / Confirm (Confirm = awarded);
+seeded as `workflow_statuses` rows, still editable in Settings. University
+decision is Pending / Approved / Rejected (Approved is stored `accepted`). Admin or assigned
+staff can **close** a file with a required reason; it stays visible but
+read-only for everyone, and only an Admin reopens it. Migration
+`20261004160000_applications_and_closing.sql`.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.
@@ -160,9 +171,9 @@ These aren't hypothetical — they will actually bind on the current plan:
 ## Data Model
 
 See `PRD.md` §5 for the full sketch (Student, UniversityApplication, Staff).
-Note: the specific status enum values (`application_status`,
-`scholarship_status`) are placeholders pending confirmation — don't treat
-them as final when writing migrations.
+Status wording was confirmed by the owner on 2026-10-04 (see the update at the
+top). The constants in `src/types/db.ts` remain preview fixtures only; live
+labels are `workflow_statuses` rows.
 
 ## Auth — built, see `supabaseauth.md`
 
@@ -194,7 +205,6 @@ instead:
 
 - Whether real payment processing is ever in scope, or fee tracking stays
   status-only.
-- Exact wording/values for application and scholarship status fields.
 - Which screens are built via Builder.io Fusion vs. hand-written directly.
 - The superadmin route's path (PRD §4.3 — unlisted but disclosed). The role
   exists and has full access; the route does not.

@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { formatDate, initials, pluralize } from "@/lib/format";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { APPLICATION_MARK_CLASSES } from "@/components/status-colors";
-import { DecisionStatusBadge } from "@/components/students/status-badge";
+import { ClosedFileBadge, DecisionStatusBadge } from "@/components/students/status-badge";
 import {
   APPLICATION_STATUS_LABELS,
   type StudentWithApplications,
@@ -47,6 +47,7 @@ export function StudentCard({
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium group-hover/card:underline">
             {student.full_name}
+            {student.closed_at ? <ClosedFileBadge className="ml-2 align-middle" /> : null}
           </p>
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <CalendarDaysIcon className="size-3" />

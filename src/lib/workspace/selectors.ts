@@ -42,7 +42,8 @@ export function applicationRows(students: StudentWithApplications[]): Applicatio
 }
 
 export function needsAttention(students: StudentWithApplications[]): AttentionItem[] {
-  return students.flatMap((student) => {
+  // A closed file needs nothing more until an admin reopens it.
+  return students.filter((student) => !student.closed_at).flatMap((student) => {
     const rows: AttentionItem[] = [];
     const workers = assignedWorkers(student);
     if (!workers.some((w) => w.status !== "inactive")) rows.push({

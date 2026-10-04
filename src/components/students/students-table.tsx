@@ -37,7 +37,7 @@ import {
   type StudentWithApplications,
 } from "@/types/db";
 import { APPLICATION_MARK_CLASSES } from "@/components/status-colors";
-import { DecisionStatusBadge } from "@/components/students/status-badge";
+import { ClosedFileBadge, DecisionStatusBadge } from "@/components/students/status-badge";
 
 export interface StudentsTableProps {
   students: StudentWithApplications[];
@@ -131,6 +131,7 @@ export function StudentsTable({
                     >
                       {student.full_name}
                     </Link>
+                    {student.closed_at ? <ClosedFileBadge /> : null}
                   </div>
                 </TableCell>
 

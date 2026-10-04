@@ -172,3 +172,8 @@ export function AdmissionBadge({
     </StatusPill>
   );
 }
+
+/** Shown beside a student's name once the file is closed (read-only until an admin reopens it). */
+export function ClosedFileBadge({ className }: { className?: string }) {
+  return <StatusPill tone="neutral" className={className}>Closed</StatusPill>;
+}

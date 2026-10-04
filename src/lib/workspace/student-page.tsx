@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { updateStudentAction, assignWorkersAction, saveApplicationAction, addNoteAction, uploadDocumentAction, archiveRecordAction } from "@/app/workspace/actions";
+import { updateStudentAction, assignWorkersAction, saveApplicationAction, addNoteAction, uploadDocumentAction, archiveRecordAction, closeStudentFileAction, reopenStudentFileAction } from "@/app/workspace/actions";
+import { CloseFileDialog } from "@/components/students/close-file-dialog";
 import { formatDate } from "@/lib/format";
 
 type ArchiveKind = Parameters<typeof archiveRecordAction>[0];
@@ -34,7 +35,10 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
   const notes = allNotes.filter((n) => !n.archived_at);
   const documents = allDocuments.filter((d) => !d.archived_at);
   const archivedFile = Boolean(student.archived_at);
-  const manage = isAdmin && !archivedFile;
+  const closedFile = Boolean(student.closed_at);
+  // Archived and closed files are both read-only; the database enforces it (can_write_student).
+  const readOnly = archivedFile || closedFile;
+  const manage = isAdmin && !readOnly;
   const archiveButton = (kind: ArchiveKind, recordId: string, archive: boolean, label: string) =>
     <MutationForm action={archiveRecordAction.bind(null, kind, recordId, archive)} submitLabel={label} variant="outline" size="sm" />;
   const archivedOn = (value?: string | null) => value ? `Archived ${formatDate(value)}` : "Archived";
@@ -46,9 +50,14 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
       <div className="space-y-1"><p className="text-sm font-medium">{archivedOn(student.archived_at)}. This file is read-only.</p>
         <p className="text-sm">Staff can&apos;t see it, and dashboards and new reports leave it out. Restore it to make changes.</p></div>
       {isAdmin ? archiveButton("student", id, false, "Restore student file") : null}
-    </div> : undefined}
-    assignSlot={workspace === "admin" && !archivedFile ? <AssignStaffControl staff={workers} assignedWorkerIds={assignedWorkers(student).map((w) => w.id)} action={assignWorkersAction.bind(null, id)} /> : undefined}
-    detailsSlot={archivedFile ? undefined : <div className="space-y-5">
+    </div> : closedFile ? <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted p-4">
+      <div className="min-w-0 space-y-1"><p className="text-sm font-medium">File closed {formatDate(student.closed_at!)}. This file is read-only.</p>
+        <p className="text-sm break-words"><span className="text-muted-foreground">Reason:</span> {student.close_reason}</p>
+        {isAdmin ? null : <p className="text-xs text-muted-foreground">Only an admin can reopen it.</p>}</div>
+      {isAdmin ? <MutationForm action={reopenStudentFileAction.bind(null, id)} submitLabel="Reopen file" variant="outline" size="sm" /> : null}
+    </div> : <div className="flex justify-end"><CloseFileDialog action={closeStudentFileAction.bind(null, id)} canReopen={isAdmin} /></div>}
+    assignSlot={workspace === "admin" && !readOnly ? <AssignStaffControl staff={workers} assignedWorkerIds={assignedWorkers(student).map((w) => w.id)} action={assignWorkersAction.bind(null, id)} /> : undefined}
+    detailsSlot={readOnly ? undefined : <div className="space-y-5">
       <StudentEditor student={student} action={updateStudentAction.bind(null, id)} isAdmin={isAdmin} />
       {manage ? <div className="surface-panel space-y-3 p-5">
         <div className="space-y-1"><h3 className="text-sm font-semibold">Archive this student file</h3>
@@ -56,7 +65,7 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
         {archiveButton("student", id, true, "Archive student file")}
       </div> : null}
     </div>}
-    applicationsSlot={archivedFile ? undefined : <div className="space-y-4">
+    applicationsSlot={readOnly ? undefined : <div className="space-y-4">
       {student.applications.length ? student.applications.map((app) => <div key={`${app.id}-${app.updated_at}`} className="space-y-2">
         <ApplicationEditor application={app} statuses={statuses} action={saveApplicationAction.bind(null, id, app.id)} />
         {manage ? archiveButton("application", app.id, true, "Archive application") : null}
@@ -67,7 +76,7 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
     </div>}
     notesSlot={<div className="space-y-5">
       <NotesPanel notes={notes} renderActions={manage ? (note) => archiveButton("note", note.id, true, "Archive note") : undefined} />
-      {archivedFile ? null : <MutationForm action={addNoteAction.bind(null, id)} submitLabel="Add note">
+      {readOnly ? null : <MutationForm action={addNoteAction.bind(null, id)} submitLabel="Add note">
         <Label htmlFor="new-note">New note</Label><Textarea id="new-note" name="body" required maxLength={10000} rows={4} />
       </MutationForm>}
       {manage ? <ArchivedList title="Archived notes" items={allNotes.filter((n) => n.archived_at).map((note) => ({
@@ -82,7 +91,7 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
           {manage ? archiveButton("document", doc.id, true, "Archive") : null}
         </div>
       </li>)}</ul> : <p className="text-sm text-muted-foreground">No documents uploaded yet.</p>}
-      {archivedFile ? null : <MutationForm action={uploadDocumentAction.bind(null, id)} submitLabel="Upload document">
+      {readOnly ? null : <MutationForm action={uploadDocumentAction.bind(null, id)} submitLabel="Upload document">
         <Label htmlFor="document-file">PDF or image, up to 4 MB</Label><Input id="document-file" type="file" name="file" required accept="application/pdf,image/jpeg,image/png,image/webp" />
       </MutationForm>}
       {manage ? <ArchivedList title="Archived documents" items={allDocuments.filter((d) => d.archived_at).map((doc) => ({

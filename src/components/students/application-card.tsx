@@ -41,6 +41,10 @@ function Field({
   );
 }
 
+function Text({ value }: { value?: string | null }) {
+  return value ? <span className="text-sm break-words">{value}</span> : <span className="text-sm text-muted-foreground">Not set</span>;
+}
+
 export function ApplicationCard({
   application,
   className,
@@ -77,12 +81,43 @@ export function ApplicationCard({
       </header>
 
       <dl className="grid gap-4 p-4 sm:grid-cols-3">
+        <Field label="Preferred subject">
+          <Text value={application.preferred_subject} />
+        </Field>
+
+        <Field label="Entrance exam">
+          <Text value={application.entrance_exam} />
+          {application.entrance_exam_date ? (
+            <span className="block text-xs text-muted-foreground">
+              Booked on {formatDate(application.entrance_exam_date)}
+            </span>
+          ) : null}
+        </Field>
+
         <Field label="Decision">
           <DecisionStatusBadge status={application.decision_status} />
         </Field>
 
         <Field label="Scholarship">
+          <Text value={application.scholarship_name} />
+          {application.scholarship_link ? (
+            <a
+              href={application.scholarship_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-0.5 inline-flex items-center gap-1 rounded text-xs text-muted-foreground underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              Scholarship application <ExternalLinkIcon className="size-3" />
+            </a>
+          ) : null}
+        </Field>
+
+        <Field label="Scholarship status">
           <ScholarshipStatusBadge status={application.scholarship_status} />
+        </Field>
+
+        <Field label="Enrollment fee">
+          <span className="text-sm">{application.enrollment_fee_paid ? "Paid" : "Not paid"}</span>
         </Field>
 
         <Field label="Admission">
@@ -90,7 +125,7 @@ export function ApplicationCard({
             <AdmissionBadge confirmed={application.admission_confirmed} />
           ) : (
             <span className="text-xs text-muted-foreground">
-              Available once an offer is received
+              Available once the decision is Approved
             </span>
           )}
         </Field>

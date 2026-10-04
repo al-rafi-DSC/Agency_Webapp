@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -43,8 +43,10 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
   const scalar = async (sql, params = []) => Object.values((await db.query(sql, params)).rows[0])[0];
   let shared, unassigned, application, otherApplication, submitted, awarded;
 
-  await t.test('new tables are protected and no placeholder statuses are seeded', async () => {
-    assert.equal(await scalar('select count(*) from public.workflow_statuses'), 0);
+  await t.test('new tables are protected and only the owner-confirmed statuses are seeded', async () => {
+    assert.deepEqual((await db.query("select category || ':' || label || ':' || counts_as_submitted || ':' || counts_as_awarded as s from public.workflow_statuses order by category, created_at, label")).rows.map(r => r.s).sort(), [
+      'application:Complete:true:false', 'application:Confirm:true:false', 'application:Waiting For University Approval:true:false',
+      'scholarship:Complete:false:false', 'scholarship:Confirm:false:true', 'scholarship:Waiting For Approval:false:false']);
     assert.equal(await scalar(`select count(*) from pg_tables where schemaname='public' and tablename in
       ('worker_details','workflow_statuses','students','student_staff_assignments','university_applications','application_history','student_notes','student_documents','yearly_reports') and rowsecurity`), 9);
     await db.exec('set role anon');
@@ -315,5 +317,35 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
       await assert.rejects(db.query("select public.submit_student_form('x','','','[]'::jsonb)"), /does not exist/, 'the removed student form is no longer callable');
       await assert.rejects(db.query('select * from public.admin_alert_reads'), /permission denied/);
     } finally { await db.exec('reset role'); }
+  });
+
+  await t.test('application details, and closing a file with a reason; only an admin reopens', async () => {
+    const student = await as(admin, () => scalar("select public.create_student('Close','Me','close@gmail.com','','2026-10-04','international','',$1::uuid[])",[[workerA]]));
+    const complete = await scalar("select id from public.workflow_statuses where category='application' and label='Complete'");
+    const app = await as(workerA, () => scalar(`insert into public.university_applications(student_id,university_name,preferred_subject,entrance_exam,entrance_exam_date,
+      scholarship_name,scholarship_link,enrollment_fee_paid,application_status_id) values($1,'Milan','Medicine','IMAT','2026-11-20','DSU','https://example.test/dsu',true,$2) returning id`,[student, complete]));
+    assert.deepEqual((await db.query('select preferred_subject, entrance_exam, entrance_exam_date::text, scholarship_name, enrollment_fee_paid, admission_confirmed, is_submitted from public.university_applications where id=$1',[app])).rows[0],
+      { preferred_subject: 'Medicine', entrance_exam: 'IMAT', entrance_exam_date: '2026-11-20', scholarship_name: 'DSU', enrollment_fee_paid: true, admission_confirmed: false, is_submitted: true });
+    await as(workerA, async () => {
+      await assert.rejects(db.query("update public.university_applications set scholarship_link='javascript:x' where id=$1",[app]), /check constraint/);
+      await assert.rejects(db.query("select public.close_student_file($1,'no')",[student]), /reason/);
+      await assert.rejects(db.query("select public.close_student_file($1,'Not mine')",[unassigned]), /unavailable/);
+      await assert.rejects(db.query("update public.students set closed_at=now() where id=$1",[student]), /permission denied/);
+      await db.query("select public.close_student_file($1,'Student chose another agency')",[student]);
+      assert.equal(await scalar('select close_reason from public.students where id=$1',[student]), 'Student chose another agency', 'staff still see the closed file and its reason');
+      assert.match(await scalar('select body from public.student_notes where student_id=$1',[student]), /File closed\. Reason: Student chose another agency/);
+      assert.equal((await db.query("update public.students set phone='1' where id=$1",[student])).affectedRows, 0, 'a closed file is read-only');
+      assert.equal((await db.query("update public.university_applications set entrance_exam='TOLC' where id=$1",[app])).affectedRows, 0);
+      await assert.rejects(db.query("insert into public.student_notes(student_id,body) values($1,'x')",[student]), /row-level security/);
+      await assert.rejects(db.query("select public.close_student_file($1,'Again please')",[student]), /already closed/);
+      await assert.rejects(db.query('select public.reopen_student_file($1)',[student]), /Only an admin/);
+    });
+    await as(admin, async () => {
+      assert.equal((await db.query("update public.students set phone='1' where id=$1",[student])).affectedRows, 0, 'read-only for admins too');
+      await db.query('select public.reopen_student_file($1)',[student]);
+      await assert.rejects(db.query('select public.reopen_student_file($1)',[student]), /not closed/);
+    });
+    assert.deepEqual((await db.query('select closed_at, close_reason from public.students where id=$1',[student])).rows[0], { closed_at: null, close_reason: null });
+    assert.equal((await as(workerA, () => db.query("update public.students set phone='2' where id=$1",[student]))).affectedRows, 1, 'reopened files are editable again');
   });
 });

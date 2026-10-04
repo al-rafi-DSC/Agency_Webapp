@@ -24,7 +24,7 @@ export const APPLICATION_STATUSES = [
 /** Live labels are supplied by the admin's workflow catalog. Constants above are preview fixtures only. */
 export type ApplicationStatus = string;
 
-/** Confirmed in PRD §5.2 — Accepted / Rejected / Pending. */
+/** PRD §5.2. Owner wording 2026-10-04: Pending / Approved / Rejected ("accepted" is shown as Approved). */
 export const DECISION_STATUSES = ["pending", "accepted", "rejected"] as const;
 export type DecisionStatus = (typeof DECISION_STATUSES)[number];
 
@@ -55,7 +55,7 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
 
 export const DECISION_STATUS_LABELS: Record<DecisionStatus, string> = {
   pending: "Pending",
-  accepted: "Accepted",
+  accepted: "Approved",
   rejected: "Rejected",
 };
 
@@ -100,7 +100,14 @@ export interface UniversityApplication {
    * process real payments (PRD §3).
    */
   admission_confirmed: boolean;
+  /** Ticked independently of admission_confirmed. Status only, never a payment. */
+  enrollment_fee_paid?: boolean;
   scholarship_status: ScholarshipStatus;
+  preferred_subject?: string;
+  entrance_exam?: string;
+  entrance_exam_date?: string | null;
+  scholarship_name?: string;
+  scholarship_link?: string | null;
   created_at: string;
   updated_at: string;
   application_status_id?: string | null;
@@ -135,6 +142,10 @@ export interface Student {
   created_by?: string;
   /** Set when an admin archives the file. Archived files are read-only. */
   archived_at?: string | null;
+  /** Set when an admin or assigned worker closes the file. Closed files are read-only; only an admin reopens. */
+  closed_at?: string | null;
+  closed_by?: string | null;
+  close_reason?: string | null;
 }
 
 /** A student joined with the data the list and detail screens actually render. */

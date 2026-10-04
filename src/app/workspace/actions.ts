@@ -100,12 +100,15 @@ export async function saveApplicationAction(studentId: string, applicationId: st
     const decision = textField(data, "decision_status", 20);
     if (!DECISION_STATUSES.some((value) => value === decision)) throw new Error("Choose a valid university decision.");
     const confirmed = data.get("admission_confirmed") === "on";
-    if (confirmed && decision !== "accepted") throw new Error("Only an accepted application can have admission confirmed.");
+    if (confirmed && decision !== "accepted") throw new Error("Admission can only be confirmed once the university decision is Approved.");
     const values = {
       university_name: textField(data, "university_name", 240, 2), application_link: urlField(data, "application_link"),
+      preferred_subject: textField(data, "preferred_subject", 200), entrance_exam: textField(data, "entrance_exam", 200),
+      entrance_exam_date: dateField(data, "entrance_exam_date"),
       application_status_id: optionalUuid(textField(data, "application_status_id", 36)),
       scholarship_status_id: optionalUuid(textField(data, "scholarship_status_id", 36)),
-      decision_status: decision, admission_confirmed: confirmed,
+      scholarship_name: textField(data, "scholarship_name", 240), scholarship_link: urlField(data, "scholarship_link"),
+      decision_status: decision, admission_confirmed: confirmed, enrollment_fee_paid: data.get("enrollment_fee_paid") === "on",
     };
     const query = applicationId
       ? client.from("university_applications").update(values).eq("id", uuid(applicationId)).eq("student_id", uuid(studentId))
@@ -113,6 +116,22 @@ export async function saveApplicationAction(studentId: string, applicationId: st
     const { data: row, error } = await query.select("id").maybeSingle();
     check(error);
     if (!row) throw new Error("Application unavailable or access changed. Reload the file.");
+  });
+}
+
+/** Admin or assigned staff. The database requires a reason and an open, accessible file. */
+export async function closeStudentFileAction(studentId: string, _state: ActionState, data: FormData): Promise<ActionState> {
+  return mutate(false, async (client) => {
+    const { error } = await client.rpc("close_student_file", { p_id: uuid(studentId), p_reason: textField(data, "reason", 2000, 3) });
+    check(error);
+  });
+}
+
+export async function reopenStudentFileAction(studentId: string, _state: ActionState, _data: FormData): Promise<ActionState> {
+  void _state; void _data;
+  return mutate(true, async (client) => {
+    const { error } = await client.rpc("reopen_student_file", { p_id: uuid(studentId) });
+    check(error);
   });
 }
 
