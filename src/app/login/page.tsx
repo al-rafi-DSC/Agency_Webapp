@@ -54,7 +54,8 @@ export default async function LoginPage({
 
   return (
     <AuthCard
-      title="Sign in"
+      variant="glass"
+      title="Welcome back"
       description="Use the email address your workspace invite was sent to."
       footer={
         <p>

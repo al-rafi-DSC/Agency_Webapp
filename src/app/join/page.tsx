@@ -18,13 +18,13 @@ export const metadata: Metadata = {
  */
 export default function JoinPage() {
   return (
-    <div className="theme-plum-peach flex flex-1 flex-col bg-background text-foreground">
-      <AuthCard
-        title="New staff details"
-        description="Send your details to the Admin. They create your account — this form does not."
-      >
-        <StaffRegistrationForm action={submitStaffRegistrationAction} />
-      </AuthCard>
-    </div>
+    <AuthCard
+      variant="glass"
+      wide
+      title="Join the team"
+      description="Send your details to the Admin. They create your account — this form does not."
+    >
+      <StaffRegistrationForm action={submitStaffRegistrationAction} />
+    </AuthCard>
   );
 }

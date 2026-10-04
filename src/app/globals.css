@@ -337,3 +337,173 @@
     @apply rounded-xl border bg-card text-card-foreground shadow-[0_1px_2px_0_oklch(0_0_0/0.04)];
   }
 }
+
+/*
+ * Glass sign-in scene — /login and /join (AuthCard variant="glass").
+ *
+ * Always a dark scene, in light and dark mode alike, so the tokens below are
+ * set on the scene itself and override whatever the <html> theme says. The
+ * form primitives (Input, Textarea, Select, Button) read these tokens, which
+ * is how they pick up the look without a glass-specific copy of each one.
+ *
+ * Select menus are portalled to <body>, outside this scope, so they keep the
+ * normal opaque popover — which is the readable choice for a list anyway.
+ */
+@layer components {
+  .theme-glass {
+    --background: #0d0518;
+    --foreground: #f6f1ff;
+    --card: rgb(255 255 255 / 0.06);
+    --card-foreground: #f6f1ff;
+    --primary: #7c3aed;
+    --primary-foreground: #ffffff;
+    --muted: rgb(255 255 255 / 0.08);
+    --muted-foreground: rgb(226 214 255 / 0.72);
+    --border: rgb(255 255 255 / 0.14);
+    --input: rgb(255 255 255 / 0.18);
+    --ring: #a78bfa;
+    --destructive: #fda4af;
+    --success-soft: rgb(167 139 250 / 0.2);
+    --success-soft-foreground: #e9ddff;
+    color-scheme: dark;
+  }
+
+  .glass-scene {
+    min-height: 100svh;
+    background:
+      radial-gradient(60rem 40rem at 10% -10%, rgb(88 28 135 / 0.55), transparent 60%),
+      radial-gradient(50rem 36rem at 110% 110%, rgb(59 7 100 / 0.7), transparent 60%),
+      linear-gradient(160deg, #150726 0%, #0d0518 55%, #08030f 100%);
+  }
+
+  /* A faint grid so the frosted card has something to blur. */
+  .glass-scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+
+  .glass-orbs {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .glass-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    opacity: 0.75;
+    animation: glass-drift 18s ease-in-out infinite alternate;
+  }
+  .glass-orb-1 {
+    width: 26rem;
+    height: 26rem;
+    top: -6rem;
+    left: -6rem;
+    background: radial-gradient(circle, #7e22ce, transparent 70%);
+  }
+  .glass-orb-2 {
+    width: 22rem;
+    height: 22rem;
+    bottom: -5rem;
+    right: -4rem;
+    background: radial-gradient(circle, #c026d3, transparent 70%);
+    animation-duration: 22s;
+    animation-delay: -6s;
+  }
+  .glass-orb-3 {
+    width: 16rem;
+    height: 16rem;
+    top: 45%;
+    left: 60%;
+    background: radial-gradient(circle, #4c1d95, transparent 70%);
+    animation-duration: 26s;
+    animation-delay: -12s;
+  }
+  @keyframes glass-drift {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to { transform: translate3d(3rem, 2rem, 0) scale(1.12); }
+  }
+
+  /* The card: frosted fill, hairline light edge, dark-purple shadow glow. */
+  .glass-panel {
+    position: relative;
+    border-radius: 1.5rem;
+    background: linear-gradient(145deg, rgb(255 255 255 / 0.11), rgb(255 255 255 / 0.04));
+    border: 1px solid rgb(255 255 255 / 0.16);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
+    box-shadow:
+      0 0 0 1px rgb(59 7 100 / 0.55),
+      0 0 32px 2px rgb(76 29 149 / 0.55),
+      0 30px 70px -18px rgb(30 4 56 / 0.95),
+      inset 0 1px 0 rgb(255 255 255 / 0.18);
+  }
+  /* A light sheen along the top edge. */
+  .glass-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(160deg, rgb(216 180 254 / 0.6), transparent 40%, transparent 70%, rgb(192 38 211 / 0.35));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .glass-mark {
+    background: linear-gradient(135deg, #7c3aed, #c026d3);
+    box-shadow: 0 0 24px rgb(124 58 237 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.3);
+  }
+
+  /* Fields: a touch of fill so they read as inputs on the glass. */
+  .theme-glass [data-slot="input"],
+  .theme-glass [data-slot="textarea"],
+  .theme-glass [data-slot="select-trigger"] {
+    background-color: rgb(255 255 255 / 0.06);
+    border-color: rgb(255 255 255 / 0.16);
+    height: auto;
+    min-height: 2.5rem;
+    border-radius: 0.75rem;
+    padding-inline: 0.875rem;
+  }
+  .theme-glass [data-slot="input"]:focus-visible,
+  .theme-glass [data-slot="textarea"]:focus-visible,
+  .theme-glass [data-slot="select-trigger"]:focus-visible {
+    background-color: rgb(255 255 255 / 0.1);
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgb(167 139 250 / 0.25), 0 0 18px rgb(124 58 237 / 0.35);
+  }
+  .theme-glass [data-slot="textarea"] {
+    padding-block: 0.625rem;
+  }
+
+  /* Primary action: violet → fuchsia, with the same purple glow as the card. */
+  .theme-glass [data-slot="button"][type="submit"] {
+    min-height: 2.75rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #6d28d9, #a21caf);
+    box-shadow: 0 10px 30px -8px rgb(109 40 217 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.25);
+    transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+  }
+  .theme-glass [data-slot="button"][type="submit"]:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 14px 36px -8px rgb(147 51 234 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.3);
+  }
+
+  .theme-glass a {
+    color: rgb(226 214 255 / 0.8);
+  }
+  .theme-glass a:hover {
+    color: #ffffff;
+  }
+}
