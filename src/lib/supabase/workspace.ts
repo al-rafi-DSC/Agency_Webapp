@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { assignedWorkers, type Staff, type StudentWithApplications, type UniversityApplication } from "@/types/db";
 import type { ActivityEvent, StudentNote } from "@/types/ui";
-import type { StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
+import type { NewStudentFile, StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
+import { getSessionUser } from "@/lib/auth/session";
 import { applicationRows, dashboardStats, needsAttention, staffWorkload } from "@/lib/workspace/selectors";
 
 type Profile = Staff & { status: "active" | "inactive" };
@@ -115,6 +116,26 @@ export async function getStaffRegistrations(): Promise<StaffRegistration[]> {
   if (error) databaseError(error.message);
   const workers = await getWorkers();
   return data.map((r) => ({ ...r, has_account: workers.some((w) => w.email.toLowerCase() === r.email) }));
+}
+/**
+ * Student files opened since this admin last marked them as seen, newest first.
+ * RLS returns only the caller's own marker; with none, files opened since the
+ * account was created count as new.
+ */
+export async function getNewStudentFiles(): Promise<NewStudentFile[]> {
+  // Preview shows the two most recent fixtures so the panel can be designed.
+  if (isUiPreview()) return (await getStudents()).slice(0, 2).map((student) => ({ student, opened_by: null }));
+  const user = await getSessionUser();
+  if (!user) return [];
+  const client = await createClient();
+  const { data, error } = await client.from("admin_alert_reads").select("student_files_seen_at").maybeSingle();
+  if (error) databaseError(error.message);
+  const { students, profiles } = await readWorkspace();
+  const since = data?.student_files_seen_at ?? profiles.find((p) => p.id === user.id)?.created_at ?? new Date(0).toISOString();
+  const after = Date.parse(since);
+  return students.filter((s) => !s.archived_at && Date.parse(s.created_at) > after)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .map((s) => ({ student: s, opened_by: profiles.find((p) => p.id === s.created_by)?.full_name ?? null }));
 }
 export async function getStudentsForWorker(id: string) {
   return (await getStudents()).filter((s) => assignedWorkers(s).some((w) => w.id === id));

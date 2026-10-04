@@ -37,6 +37,11 @@ export const SCHOLARSHIP_STATUSES = [
 ] as const;
 export type ScholarshipStatus = string;
 
+/** Mirrors the CHECK on `students.applicant_type`. */
+export const APPLICANT_TYPE_LABELS = { eu_equivalent: "EU Equivalent", international: "International" } as const;
+export type ApplicantType = keyof typeof APPLICANT_TYPE_LABELS;
+export function isApplicantType(value: string): value is ApplicantType { return Object.hasOwn(APPLICANT_TYPE_LABELS, value); }
+
 export const USER_ROLES = ["admin", "staff", "superadmin"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
@@ -117,8 +122,17 @@ export interface Student {
   assigned_staff_id: string | null;
   created_at: string;
   file_number?: number;
+  /** Editable name parts; `full_name` is derived from them by the database. */
+  first_name?: string;
+  surname?: string;
   email?: string;
   phone?: string;
+  /** Null on files opened before the field existed. */
+  applicant_type?: ApplicantType | null;
+  /** HTTPS Google Drive link. Only an admin can set it (database trigger). */
+  drive_link?: string | null;
+  /** The admin who opened the file. */
+  created_by?: string;
   /** Set when an admin archives the file. Archived files are read-only. */
   archived_at?: string | null;
 }

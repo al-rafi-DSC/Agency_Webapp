@@ -1,3 +1,5 @@
+import type { StudentWithApplications } from "@/types/db";
+
 export interface ActionState {
   error: string | null;
   message?: string | null;
@@ -29,6 +31,13 @@ export interface StaffRegistration {
   submitted_at: string;
   /** A staff account with this email already exists, so the Admin can apply the details to it. */
   has_account: boolean;
+}
+
+/** A student file shown as a dashboard notification until the admin marks it as seen. */
+export interface NewStudentFile {
+  student: StudentWithApplications;
+  /** Name of the admin who opened the file; null if that profile is unreadable. */
+  opened_by: string | null;
 }
 
 export interface StudentDocument {

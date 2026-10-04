@@ -19,9 +19,10 @@ import {
   decisionSegments,
 } from "@/components/dashboard/status-segments";
 import { StaffRequests } from "@/components/staff/staff-requests";
+import { NewStudentFiles } from "@/components/students/new-student-files";
 import { MutationForm } from "@/components/workspace/mutation-form";
-import { resolveStaffRegistrationAction } from "@/app/workspace/actions";
-import { getActivity, getStaffRegistrations } from "@/lib/supabase/workspace";
+import { markStudentFilesSeenAction, resolveStaffRegistrationAction } from "@/app/workspace/actions";
+import { getActivity, getNewStudentFiles, getStaffRegistrations } from "@/lib/supabase/workspace";
 import {
   getDashboardStats,
   getNeedsAttention,
@@ -34,12 +35,13 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 
 export default async function AdminDashboardPage() {
-  const [stats, workload, attention, activity, staffRequests] = await Promise.all([
+  const [stats, workload, attention, activity, staffRequests, newFiles] = await Promise.all([
     getDashboardStats(),
     getStaffWorkload(),
     getNeedsAttention(),
     getActivity(),
     getStaffRegistrations(),
+    getNewStudentFiles(),
   ]);
 
   const now = await workspaceNow();
@@ -52,6 +54,18 @@ export default async function AdminDashboardPage() {
       />
 
       <div className="flex flex-col gap-5">
+        <NewStudentFiles
+          files={newFiles}
+          action={newFiles.length ? (
+            <MutationForm
+              action={markStudentFilesSeenAction.bind(null, newFiles[0].student.created_at)}
+              submitLabel="Mark as seen"
+              variant="outline"
+              size="sm"
+            />
+          ) : null}
+        />
+
         <StaffRequests
           requests={staffRequests}
           actions={Object.fromEntries(

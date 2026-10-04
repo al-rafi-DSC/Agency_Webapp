@@ -7,7 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { dateField, emailField, optionalUuid, textField, urlField, uuid } from "@/lib/workspace/input";
-import { DECISION_STATUSES } from "@/types/db";
+import { DECISION_STATUSES, isApplicantType } from "@/types/db";
 import { isGender, type ActionState } from "@/types/workspace";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
@@ -36,12 +36,24 @@ function check(error: { code?: string; message: string } | null) {
   throw new Error("The record could not be saved. Check that the workspace migrations have been applied.");
 }
 
+function applicantType(data: FormData, required: boolean) {
+  const value = textField(data, "applicant_type", 20).replace("__unset", "");
+  if (!value && !required) return null;
+  if (!isApplicantType(value)) throw new Error("Choose whether the applicant is EU Equivalent or International.");
+  return value;
+}
+
 export async function createStudentAction(_state: ActionState, data: FormData): Promise<ActionState> {
   const result = await mutate(true, async (client) => {
-    const workers = data.getAll("worker_ids").map((id) => uuid(String(id)));
+    // One worker from the dropdown, or none. Further workers can be added on the file.
+    const worker = optionalUuid(textField(data, "worker_id", 36));
+    const email = emailField(data);
+    if (!email) throw new Error("Enter the student's Gmail address.");
     const { data: id, error } = await client.rpc("create_student", {
-      p_full_name: textField(data, "full_name", 200, 2), p_email: emailField(data),
-      p_phone: textField(data, "phone", 80), p_file_opened_at: dateField(data, "file_opened_at", true), p_worker_ids: workers,
+      p_first_name: textField(data, "first_name", 100, 1), p_surname: textField(data, "surname", 100, 1),
+      p_email: email, p_phone: textField(data, "phone", 80), p_file_opened_at: dateField(data, "file_opened_at", true),
+      p_applicant_type: applicantType(data, true), p_drive_link: urlField(data, "drive_link", true) ?? "",
+      p_worker_ids: worker ? [worker] : [],
     });
     check(error);
     return String(id);
@@ -52,13 +64,26 @@ export async function createStudentAction(_state: ActionState, data: FormData): 
 
 export async function updateStudentAction(studentId: string, _state: ActionState, data: FormData): Promise<ActionState> {
   return mutate(false, async (client) => {
-    // Staff forms omit the file-opened date; a database trigger rejects a non-admin change anyway.
-    const { data: row, error } = await client.from("students").update({ full_name: textField(data, "full_name", 200, 2),
+    // Staff forms omit the file-opened date and Drive link; database triggers reject a non-admin change anyway.
+    const { data: row, error } = await client.from("students").update({
+      first_name: textField(data, "first_name", 100, 1), surname: textField(data, "surname", 100, 1),
       email: emailField(data), phone: textField(data, "phone", 80), photo_url: urlField(data, "photo_url", true),
+      applicant_type: applicantType(data, false),
       ...(data.has("file_opened_at") ? { file_opened_at: dateField(data, "file_opened_at", true) } : {}),
+      ...(data.has("drive_link") ? { drive_link: urlField(data, "drive_link", true) } : {}),
     }).eq("id", uuid(studentId)).select("id").maybeSingle();
     check(error);
     if (!row) throw new Error("Student unavailable or access changed. Reload the file.");
+  });
+}
+
+/** Clears this admin's "new student file" notifications up to the newest one they were shown. */
+export async function markStudentFilesSeenAction(until: string, _state: ActionState, _data: FormData): Promise<ActionState> {
+  void _state; void _data;
+  return mutate(true, async (client) => {
+    if (Number.isNaN(Date.parse(until))) throw new Error("Reload the dashboard and try again.");
+    const { error } = await client.rpc("mark_student_files_seen", { p_until: until });
+    check(error);
   });
 }
 

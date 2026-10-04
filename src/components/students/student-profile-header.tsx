@@ -1,4 +1,4 @@
-import { assignedWorkers } from "@/types/db";
+import { APPLICANT_TYPE_LABELS, assignedWorkers } from "@/types/db";
 /**
  * Identity block at the top of a student file.
  *
@@ -10,7 +10,7 @@ import { assignedWorkers } from "@/types/db";
  */
 
 import type { ReactNode } from "react";
-import { CalendarDaysIcon, FileTextIcon, UserIcon } from "lucide-react";
+import { CalendarDaysIcon, ExternalLinkIcon, FileTextIcon, FolderIcon, GlobeIcon, UserIcon } from "lucide-react";
 
 import { formatDateLong, initials, pluralize } from "@/lib/format";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -85,6 +85,19 @@ export function StudentProfileHeader({
             ) : (
               <span className="text-muted-foreground">Unassigned</span>
             ))}
+        </Meta>
+
+        <Meta icon={GlobeIcon} label="Applicant from">
+          {student.applicant_type ? APPLICANT_TYPE_LABELS[student.applicant_type] : <span className="text-muted-foreground">Not set</span>}
+        </Meta>
+
+        <Meta icon={FolderIcon} label="Drive">
+          {student.drive_link ? (
+            <a href={student.drive_link} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded underline underline-offset-4 outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50">
+              Open Drive folder <ExternalLinkIcon className="size-3" />
+            </a>
+          ) : <span className="text-muted-foreground">No link yet</span>}
         </Meta>
 
         <Meta icon={FileTextIcon} label="Universities">

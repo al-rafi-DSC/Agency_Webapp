@@ -35,6 +35,13 @@ that email takes the submitted details. Migration
 `20260930100000_staff_registrations.sql` must be applied before the app code
 that reads it is deployed. Detail in `supabase/WORKSPACE_SETUP.md`.
 
+**Added 2026-10-04** — the "Open a student file" form takes Name, Surname,
+File opened, Phone, Gmail, Applicant from (EU Equivalent / International),
+an admin-only Drive link and one worker (dropdown). Each newly opened file is a
+notification on every admin's dashboard until that admin marks it as seen.
+Migration `20261004120000_student_file_details.sql` replaces `create_student()`
+— apply it right before deploying. Detail in `supabase/WORKSPACE_SETUP.md`.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

@@ -49,7 +49,7 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
     </div> : undefined}
     assignSlot={workspace === "admin" && !archivedFile ? <AssignStaffControl staff={workers} assignedWorkerIds={assignedWorkers(student).map((w) => w.id)} action={assignWorkersAction.bind(null, id)} /> : undefined}
     detailsSlot={archivedFile ? undefined : <div className="space-y-5">
-      <StudentEditor student={student} action={updateStudentAction.bind(null, id)} canEditOpenDate={isAdmin} />
+      <StudentEditor student={student} action={updateStudentAction.bind(null, id)} isAdmin={isAdmin} />
       {manage ? <div className="surface-panel space-y-3 p-5">
         <div className="space-y-1"><h3 className="text-sm font-semibold">Archive this student file</h3>
           <p className="text-sm text-muted-foreground">Hides the file from staff, dashboards and new reports. Nothing is deleted, and you can restore it from Students → Archived student files.</p></div>

@@ -26,6 +26,32 @@ hosting, existing account roles, or passwords.
    the database until a deliberate migration drops them; a fresh project can
    still run this file harmlessly.
 
+8. Run `migrations/20261004120000_student_file_details.sql` (the "Open a
+   student file" fields and the admin notification — see below). **Apply it
+   immediately before deploying the app code that uses it**: it replaces
+   `create_student()`, so the previous app version cannot open files once it is
+   applied, and the new app version cannot open files until it is. It also
+   drops the removed student Google Form's functions (the
+   `student_submissions` table and its rows are kept).
+
+## Student file fields and new-file notifications (2026-10-04)
+
+- **Name + Surname** are the editable columns (`first_name`, `surname`).
+  `full_name` is derived by a trigger and can no longer be written directly;
+  everything that lists or reports students keeps reading `full_name`.
+  Existing names were split at the first space.
+- **Applicant from** (`applicant_type`): `eu_equivalent` or `international`,
+  required when a file is opened, null on files opened earlier.
+- **Drive link** (`drive_link`): HTTPS only. Assigned staff can read it; only an
+  admin can set or change it (trigger `guard_drive_link`).
+- **Gmail** is the existing `email` column, required on the open-file form.
+- The open-file form assigns **one** worker from a dropdown; more can still be
+  added on the file itself.
+- **Notifications:** every newly opened file appears in "New student files" on
+  each admin's dashboard until that admin presses *Mark as seen*. The marker is
+  per admin (`admin_alert_reads`, read through RLS, written only by
+  `mark_student_files_seen()`).
+
 **Hosted status:** the first five migrations are applied to the `Agency_Webapp`
 project (`hqyavenqhutmbiiusrhz`) as of 2026-09-11 and pass the check below.
 
