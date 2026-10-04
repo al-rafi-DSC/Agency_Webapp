@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { assignedWorkers, type Staff, type StudentWithApplications, type UniversityApplication } from "@/types/db";
 import type { ActivityEvent, StudentNote } from "@/types/ui";
-import type { StaffRegistration, StudentDocument, StudentSubmission, WorkflowStatus, YearlyReport } from "@/types/workspace";
+import type { StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
 import { applicationRows, dashboardStats, needsAttention, staffWorkload } from "@/lib/workspace/selectors";
 
 type Profile = Staff & { status: "active" | "inactive" };
@@ -115,15 +115,6 @@ export async function getStaffRegistrations(): Promise<StaffRegistration[]> {
   if (error) databaseError(error.message);
   const workers = await getWorkers();
   return data.map((r) => ({ ...r, has_account: workers.some((w) => w.email.toLowerCase() === r.email) }));
-}
-/** Waiting responses from the student Google Form. RLS returns rows to admins only. */
-export async function getStudentSubmissions(): Promise<StudentSubmission[]> {
-  if (isUiPreview()) return [];
-  const client = await createClient();
-  const { data, error } = await client.from("student_submissions").select("id,full_name,email,phone,answers,submitted_at")
-    .eq("status", "pending").order("submitted_at", { ascending: false });
-  if (error) databaseError(error.message);
-  return data as StudentSubmission[];
 }
 export async function getStudentsForWorker(id: string) {
   return (await getStudents()).filter((s) => assignedWorkers(s).some((w) => w.id === id));

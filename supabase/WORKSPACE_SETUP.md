@@ -19,8 +19,12 @@ hosting, existing account roles, or passwords.
    (the public staff details form — see below). **Apply it before deploying
    the app code that reads it**, or the Admin dashboard fails to load.
 
-7. Run `migrations/20260930140000_student_submissions.sql` in the SQL Editor
-   (student Google Form intake). Same rule: apply before deploying the code.
+7. `migrations/20260930140000_student_submissions.sql` (student Google Form
+   intake) is applied to the hosted project but the feature was **removed from
+   the app on 2026-10-04** at the owner's request: no route, page or action
+   uses `student_submissions` any more. The table and its functions remain in
+   the database until a deliberate migration drops them; a fresh project can
+   still run this file harmlessly.
 
 **Hosted status:** the first five migrations are applied to the `Agency_Webapp`
 project (`hqyavenqhutmbiiusrhz`) as of 2026-09-11 and pass the check below.
@@ -74,7 +78,6 @@ bucket is private.
 | Section | Tables | Access |
 | --- | --- | --- |
 | Worker | existing `profiles`, new `worker_details` | Admin sees staff; staff see their own profile/details |
-| Student forms | `student_submissions` | The Google Form script submits through one checked RPC; only Admin reads, accepts and dismisses |
 | Staff requests | `staff_registrations` | Anyone with the unlisted link submits through one checked RPC; only Admin reads and resolves |
 | Student | `students`, `student_staff_assignments`, `university_applications`, `application_history`, `student_notes`, `student_documents` | Admin sees all; staff can access only currently assigned students |
 | Yearly Summary | `yearly_reports` | Admin / Superadmin only |
@@ -118,19 +121,6 @@ request. The Admin can edit them afterwards on the worker's page. If the account
 already existed, the Admin applies the details with **Use these details**, or
 closes the request with **Dismiss**. The form never sets a role and never
 changes an Admin account.
-
-**New students arrive through the agency's Google Form** (owner request,
-2026-09-30; migration `20260930140000_student_submissions.sql`). The script in
-`scripts/student-google-form.gs` is installed on the form in Google and posts
-each response to `/api/student-form`. That route needs no session or secret, so
-it is treated as public: `submit_student_form()` only queues a row in
-`student_submissions` (Admin-only to read, at most 200 waiting). It accepts
-whatever questions the form has and stores every answer; name, email and phone
-are picked out by question title as a convenience. The Admin dashboard lists
-waiting forms. **Review and assign** shows the answers and opens the student
-file with the chosen workers in one step (`accept_student_submission()`), saving
-the answers as the file's first note; **Dismiss** closes a form without deleting
-it. Files uploaded to the Google Form stay in Google Drive and arrive as links.
 
 Assignment records retain start/end timestamps. Removing a current assignment
 ends it; assigning the worker again creates another history row. A failed

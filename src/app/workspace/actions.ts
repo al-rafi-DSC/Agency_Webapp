@@ -50,23 +50,6 @@ export async function createStudentAction(_state: ActionState, data: FormData): 
   return result;
 }
 
-/** Opens a student file from a waiting Google Form response, with the Admin's confirmed details and chosen workers. */
-export async function acceptStudentSubmissionAction(submissionId: string, _state: ActionState, data: FormData): Promise<ActionState> {
-  const result = await mutate(true, async (client) => {
-    const { data: id, error } = await client.rpc("accept_student_submission", { p_id: uuid(submissionId),
-      p_full_name: textField(data, "full_name", 200, 2), p_email: emailField(data), p_phone: textField(data, "phone", 80),
-      p_file_opened_at: dateField(data, "file_opened_at", true), p_worker_ids: data.getAll("worker_ids").map((value) => uuid(String(value))) });
-    check(error);
-    return String(id);
-  });
-  if (result.id) redirect(`/admin/students/${result.id}`);
-  return result;
-}
-export async function dismissStudentSubmissionAction(submissionId: string, _state: ActionState, _data: FormData): Promise<ActionState> {
-  void _state; void _data;
-  return mutate(true, async (client) => { const { error } = await client.rpc("dismiss_student_submission", { p_id: uuid(submissionId) }); check(error); });
-}
-
 export async function updateStudentAction(studentId: string, _state: ActionState, data: FormData): Promise<ActionState> {
   return mutate(false, async (client) => {
     // Staff forms omit the file-opened date; a database trigger rejects a non-admin change anyway.

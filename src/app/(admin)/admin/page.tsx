@@ -21,8 +21,7 @@ import {
 import { StaffRequests } from "@/components/staff/staff-requests";
 import { MutationForm } from "@/components/workspace/mutation-form";
 import { resolveStaffRegistrationAction } from "@/app/workspace/actions";
-import { StudentSubmissions } from "@/components/students/student-submissions";
-import { getActivity, getStaffRegistrations, getStudentSubmissions } from "@/lib/supabase/workspace";
+import { getActivity, getStaffRegistrations } from "@/lib/supabase/workspace";
 import {
   getDashboardStats,
   getNeedsAttention,
@@ -35,13 +34,12 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 
 export default async function AdminDashboardPage() {
-  const [stats, workload, attention, activity, staffRequests, studentSubmissions] = await Promise.all([
+  const [stats, workload, attention, activity, staffRequests] = await Promise.all([
     getDashboardStats(),
     getStaffWorkload(),
     getNeedsAttention(),
     getActivity(),
     getStaffRegistrations(),
-    getStudentSubmissions(),
   ]);
 
   const now = await workspaceNow();
@@ -77,8 +75,6 @@ export default async function AdminDashboardPage() {
             ]),
           )}
         />
-
-        <StudentSubmissions submissions={studentSubmissions} />
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatTile

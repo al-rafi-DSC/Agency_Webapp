@@ -27,7 +27,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isUiPreview, requireSupabasePublicEnv } from "@/lib/supabase/env";
 
 /** Routes reachable without a session. Everything else requires one. */
-const PUBLIC_ROUTES = ["/login", "/auth", "/forgot-password", "/reset-password", "/join", "/api/student-form"];
+const PUBLIC_ROUTES = ["/login", "/auth", "/forgot-password", "/reset-password", "/join"];
 
 function isPublicRoute(pathname: string) {
   return PUBLIC_ROUTES.some(
