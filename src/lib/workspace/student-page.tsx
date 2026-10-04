@@ -1,6 +1,6 @@
 import "server-only";
 import { notFound } from "next/navigation";
-import { getStudent, getWorkers, getWorkflowStatuses, getNotes, getDocuments, getActivity, workspaceNow } from "@/lib/supabase/workspace";
+import { getStudent, getWorkers, getWorkflowStatuses, getNotes, getActivity, workspaceNow } from "@/lib/supabase/workspace";
 import { requireRole, requireSessionUser } from "@/lib/auth/session";
 import { assignedWorkers } from "@/types/db";
 import { StudentDetail } from "@/components/students/student-detail";
@@ -11,10 +11,9 @@ import { NotesPanel } from "@/components/students/notes-panel";
 import { MutationForm } from "@/components/workspace/mutation-form";
 import { ArchivedList } from "@/components/workspace/archived-list";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { updateStudentAction, assignWorkersAction, saveApplicationAction, addNoteAction, uploadDocumentAction, archiveRecordAction, closeStudentFileAction, reopenStudentFileAction } from "@/app/workspace/actions";
+import { updateStudentAction, assignWorkersAction, saveApplicationAction, addNoteAction, archiveRecordAction, closeStudentFileAction, reopenStudentFileAction } from "@/app/workspace/actions";
 import { CloseFileDialog } from "@/components/students/close-file-dialog";
 import { formatDate } from "@/lib/format";
 import { FolderOpenIcon } from "lucide-react";
@@ -30,11 +29,10 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
   const isAdmin = user.role === "admin" || user.role === "superadmin";
   const student = await getStudent(id, workspace);
   if (!student) notFound();
-  const [workers, statuses, allNotes, allDocuments, activity, now] = await Promise.all([
-    getWorkers(), getWorkflowStatuses(), getNotes(id), getDocuments(id), getActivity(id, workspace), workspaceNow(),
+  const [workers, statuses, allNotes, activity, now] = await Promise.all([
+    getWorkers(), getWorkflowStatuses(), getNotes(id), getActivity(id, workspace), workspaceNow(),
   ]);
   const notes = allNotes.filter((n) => !n.archived_at);
-  const documents = allDocuments.filter((d) => !d.archived_at);
   const archivedFile = Boolean(student.archived_at);
   const closedFile = Boolean(student.closed_at);
   // Archived and closed files are both read-only; the database enforces it (can_write_student).
@@ -84,22 +82,11 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
         id: note.id, label: note.body.length > 120 ? `${note.body.slice(0, 120)}…` : note.body,
         detail: `${note.author_name} · ${archivedOn(note.archived_at)}`, action: archiveButton("note", note.id, false, "Restore") }))} /> : null}
     </div>}
-    documentsSlot={<div className="space-y-5">
+    documentsSlot={<div className="space-y-3">
+      <p className="text-sm">Upload the documents into the Drive.</p>
       {student.drive_link ? <Button nativeButton={false} render={<a href={student.drive_link} target="_blank" rel="noopener noreferrer">
         <FolderOpenIcon /> Drive Link</a>} />
         : <p className="text-sm text-muted-foreground">No Drive link yet.{isAdmin ? " Add it under Details." : " An admin adds it."}</p>}
-      {documents.length ? <ul className="divide-y">{documents.map((doc) => <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-        <div className="min-w-0"><p className="break-words text-sm font-medium">{doc.name}</p><p className="text-xs text-muted-foreground">{Math.ceil(doc.size_bytes / 1024)} KB · {formatDate(doc.created_at)}</p></div>
-        <div className="flex flex-wrap items-center gap-2">
-          {doc.download_url ? <Button variant="outline" nativeButton={false} render={<a href={doc.download_url}>Download</a>} /> : null}
-          {manage ? archiveButton("document", doc.id, true, "Archive") : null}
-        </div>
-      </li>)}</ul> : <p className="text-sm text-muted-foreground">No documents uploaded yet.</p>}
-      {readOnly ? null : <MutationForm action={uploadDocumentAction.bind(null, id)} submitLabel="Upload document">
-        <Label htmlFor="document-file">PDF or image, up to 4 MB</Label><Input id="document-file" type="file" name="file" required accept="application/pdf,image/jpeg,image/png,image/webp" />
-      </MutationForm>}
-      {manage ? <ArchivedList title="Archived documents" items={allDocuments.filter((d) => d.archived_at).map((doc) => ({
-        id: doc.id, label: doc.name, detail: archivedOn(doc.archived_at), action: archiveButton("document", doc.id, false, "Restore") }))} /> : null}
     </div>}
   />;
 }
