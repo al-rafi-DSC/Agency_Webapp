@@ -51,6 +51,11 @@ export function needsAttention(students: StudentWithApplications[]): AttentionIt
       university_name: null, reason: workers.length ? "Assigned worker is inactive" : "No worker assigned",
       detail: "An admin needs to assign an active worker to this file.",
     });
+    for (const note of student.urgent_notes ?? []) rows.push({
+      id: `note-${note.id}`, severity: "high", student_id: student.id, student_name: student.full_name,
+      university_name: null, reason: "Urgent note",
+      detail: note.body.length > 140 ? `${note.body.slice(0, 140)}…` : note.body,
+    });
     for (const app of student.applications) if (app.decision_status === "accepted" && !app.admission_confirmed) rows.push({
       id: `offer-${app.id}`, severity: "high", student_id: student.id, student_name: student.full_name,
       university_name: app.university_name, reason: "Offer not confirmed", detail: "Check enrollment and admission confirmation.",

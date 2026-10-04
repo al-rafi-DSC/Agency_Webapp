@@ -56,6 +56,11 @@ export interface ActivityEvent {
 }
 
 /** Note with the author name that the caller may see. */
+/** Mirrors the CHECK on `student_notes.priority`, most pressing first. */
+export const NOTE_PRIORITY_LABELS = { urgent: "Urgent", moderate: "Moderate", normal: "Normal" } as const;
+export type NotePriority = keyof typeof NOTE_PRIORITY_LABELS;
+export function isNotePriority(value: string): value is NotePriority { return Object.hasOwn(NOTE_PRIORITY_LABELS, value); }
+
 export interface StudentNote {
   id: string;
   student_id: string;
@@ -63,6 +68,11 @@ export interface StudentNote {
   body: string;
   created_at: string;
   archived_at?: string | null;
+  /** "normal" when unset (older notes and preview fixtures). */
+  priority?: NotePriority;
+  /** Only Urgent and Moderate notes are resolved. */
+  resolved_at?: string | null;
+  resolved_by_name?: string | null;
 }
 
 /**

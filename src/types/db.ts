@@ -157,6 +157,8 @@ export interface StudentWithApplications extends Student {
   archived_applications?: UniversityApplication[];
   /** Real assignments are many-to-many. Singular fields above only support old fixtures. */
   assigned_workers?: Pick<Staff, "id" | "full_name" | "avatar_url" | "status">[];
+  /** Unresolved, unarchived Urgent notes, newest first — for dashboards and list labels. */
+  urgent_notes?: { id: string; body: string; created_at: string }[];
 }
 
 export function assignedWorkers(student: Pick<StudentWithApplications, "assigned_workers" | "assigned_staff">): NonNullable<StudentWithApplications["assigned_workers"]> {

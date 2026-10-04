@@ -40,6 +40,20 @@ hosting, existing account roles, or passwords.
    application form writes columns this migration adds. It is additive, so the
    previous app version keeps working after it is applied.
 
+10. Run `migrations/20261005100000_note_priority.sql` (note priority — see
+    below). **Apply it before deploying the app code that uses it**: the app
+    reads the new `priority` column. Additive, so the previous version keeps working.
+
+## Note priority (2026-10-05)
+
+- `student_notes.priority`: `urgent`, `moderate` or `normal` (default), set
+  when the note is written. `resolved_at`/`resolved_by` are set only by
+  `resolve_student_note()` — admin or assigned staff on an open file, for an
+  unresolved Urgent/Moderate note. Normal notes are never resolved.
+- Unresolved, unarchived Urgent notes feed "Needs attention" on the Admin and
+  Staff dashboards and an "Urgent" label in the student lists (RLS scopes them
+  to the files each account can read).
+
 ## Application details, statuses and closing a file (2026-10-04)
 
 - New application columns: `preferred_subject`, `entrance_exam`,

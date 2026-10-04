@@ -9,6 +9,7 @@ import { isUiPreview } from "@/lib/supabase/env";
 import { dateField, emailField, optionalUuid, textField, urlField, uuid } from "@/lib/workspace/input";
 import { DECISION_STATUSES, isApplicantType } from "@/types/db";
 import { isGender, type ActionState } from "@/types/workspace";
+import { isNotePriority } from "@/types/ui";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 type Result = ActionState & { id?: string };
@@ -171,7 +172,18 @@ export async function archiveStatusAction(id: string, archived: boolean, _state:
 
 export async function addNoteAction(studentId: string, _state: ActionState, data: FormData): Promise<ActionState> {
   return mutate(false, async (client) => {
-    const { error } = await client.from("student_notes").insert({ student_id: uuid(studentId), body: textField(data, "body", 10000, 1) });
+    const priority = textField(data, "priority", 20).replace("__unset", "") || "normal";
+    if (!isNotePriority(priority)) throw new Error("Choose Urgent, Moderate or Normal.");
+    const { error } = await client.from("student_notes").insert({ student_id: uuid(studentId), body: textField(data, "body", 10000, 1), priority });
+    check(error);
+  });
+}
+
+/** Admin or assigned staff, on an open file. The database checks access and that the note is Urgent/Moderate and unresolved. */
+export async function resolveNoteAction(noteId: string, _state: ActionState, _data: FormData): Promise<ActionState> {
+  void _state; void _data;
+  return mutate(false, async (client) => {
+    const { error } = await client.rpc("resolve_student_note", { p_id: uuid(noteId) });
     check(error);
   });
 }

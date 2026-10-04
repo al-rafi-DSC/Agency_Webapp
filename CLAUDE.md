@@ -53,6 +53,13 @@ staff can **close** a file with a required reason; it stays visible but
 read-only for everyone, and only an Admin reopens it. Migration
 `20261004160000_applications_and_closing.sql`.
 
+**Added 2026-10-05** — notes carry a priority: Urgent / Moderate / Normal
+(default). Admin or assigned staff can mark an Urgent/Moderate note resolved
+(`resolve_student_note()`; keeps the text, records who/when). Unresolved Urgent
+notes appear in "Needs attention" and as an "Urgent" label in student lists.
+The Documents tab is only a note plus the student's Drive Link button (no
+in-app uploads). Migration `20261005100000_note_priority.sql`.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

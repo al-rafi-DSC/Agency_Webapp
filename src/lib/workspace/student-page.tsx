@@ -8,12 +8,14 @@ import { StudentEditor } from "@/components/students/student-editor";
 import { AssignStaffControl } from "@/components/students/assign-staff-control";
 import { ApplicationEditor } from "@/components/applications/application-editor";
 import { NotesPanel } from "@/components/students/notes-panel";
-import { MutationForm } from "@/components/workspace/mutation-form";
+import { MutationForm, SelectField } from "@/components/workspace/mutation-form";
+import { Fragment } from "react";
+import { NOTE_PRIORITY_LABELS, type NotePriority } from "@/types/ui";
 import { ArchivedList } from "@/components/workspace/archived-list";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { updateStudentAction, assignWorkersAction, saveApplicationAction, addNoteAction, archiveRecordAction, closeStudentFileAction, reopenStudentFileAction } from "@/app/workspace/actions";
+import { updateStudentAction, assignWorkersAction, saveApplicationAction, addNoteAction, resolveNoteAction, archiveRecordAction, closeStudentFileAction, reopenStudentFileAction } from "@/app/workspace/actions";
 import { CloseFileDialog } from "@/components/students/close-file-dialog";
 import { formatDate } from "@/lib/format";
 import { FolderOpenIcon } from "lucide-react";
@@ -74,9 +76,15 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
         id: app.id, label: app.university_name, detail: archivedOn(app.archived_at), action: archiveButton("application", app.id, false, "Restore") }))} /> : null}
     </div>}
     notesSlot={<div className="space-y-5">
-      <NotesPanel notes={notes} renderActions={manage ? (note) => archiveButton("note", note.id, true, "Archive note") : undefined} />
+      <NotesPanel notes={notes} actions={Object.fromEntries(notes.map((note) => [note.id, <Fragment key={note.id}>
+        {!readOnly && (note.priority ?? "normal") !== "normal" && !note.resolved_at
+          ? <MutationForm action={resolveNoteAction.bind(null, note.id)} submitLabel="Mark as resolved" variant="outline" size="sm" /> : null}
+        {manage ? archiveButton("note", note.id, true, "Archive note") : null}
+      </Fragment>]))} />
       {readOnly ? null : <MutationForm action={addNoteAction.bind(null, id)} submitLabel="Add note">
         <Label htmlFor="new-note">New note</Label><Textarea id="new-note" name="body" required maxLength={10000} rows={4} />
+        <div className="max-w-xs"><SelectField name="priority" label="Priority" defaultValue="normal"
+          options={(Object.keys(NOTE_PRIORITY_LABELS) as NotePriority[]).map((value) => ({ value, label: NOTE_PRIORITY_LABELS[value] }))} /></div>
       </MutationForm>}
       {manage ? <ArchivedList title="Archived notes" items={allNotes.filter((n) => n.archived_at).map((note) => ({
         id: note.id, label: note.body.length > 120 ? `${note.body.slice(0, 120)}…` : note.body,

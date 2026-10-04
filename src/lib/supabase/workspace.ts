@@ -33,6 +33,15 @@ async function readRows<T>(table: string, columns = "*", key = "id"): Promise<T[
   }
 }
 
+/** Unresolved Urgent notes, newest first. RLS returns only notes on files this account can read. */
+async function readUrgentNotes() {
+  const client = await createClient();
+  const { data, error } = await client.from("student_notes").select("id,student_id,body,created_at")
+    .eq("priority", "urgent").is("resolved_at", null).is("archived_at", null).order("created_at", { ascending: false }).limit(1000);
+  if (error) databaseError(error.message);
+  return data as { id: string; student_id: string; body: string; created_at: string }[];
+}
+
 /** Runs exclusively as the signed-in account. RLS scopes every table read. */
 const readWorkspace = cache(async () => {
   if (isUiPreview()) {
@@ -55,11 +64,12 @@ const readWorkspace = cache(async () => {
     ];
     return { students, workers, profiles: workers, statuses };
   }
-  const [profiles, details, rows, applications, assignments, statuses] = await Promise.all([
+  const [profiles, details, rows, applications, assignments, statuses, urgentNotes] = await Promise.all([
     readRows<Profile>("profiles", "id,full_name,email,role,status,avatar_url,created_at"),
     readRows<WorkerDetails>("worker_details", "*", "profile_id"),
     readRows<StudentRow>("students"), readRows<Application>("university_applications"),
     readRows<Assignment>("student_staff_assignments"), readRows<WorkflowStatus>("workflow_statuses"),
+    readUrgentNotes(),
   ]);
   const statusById = new Map(statuses.map((s) => [s.id, s]));
   const workers = profiles.filter((p) => p.role === "staff").map((p) => ({ ...p, auth_user_id: p.id,
@@ -69,6 +79,7 @@ const readWorkspace = cache(async () => {
       .map((a) => profiles.find((p) => p.id === a.worker_id)).filter((p): p is Profile => !!p)
       .map((p) => ({ id: p.id, full_name: p.full_name, avatar_url: p.avatar_url, status: p.status }));
     return { ...student, assigned_workers: assigned, assigned_staff_id: assigned[0]?.id ?? null,
+      urgent_notes: urgentNotes.filter((n) => n.student_id === student.id).map(({ id, body, created_at }) => ({ id, body, created_at })),
       assigned_staff: assigned[0] ?? null, applications: applications.filter((a) => a.student_id === student.id).map((a) => ({ ...a,
         application_status: statusById.get(a.application_status_id ?? "")?.label ?? "",
         scholarship_status: statusById.get(a.scholarship_status_id ?? "")?.label ?? "",
@@ -182,7 +193,9 @@ export async function getNotes(studentId: string): Promise<StudentNote[]> {
   if (error) databaseError(error.message);
   const { profiles } = await readWorkspace();
   return data.map((n) => ({ id: n.id, student_id: n.student_id, body: n.body, created_at: n.created_at, archived_at: n.archived_at,
-    author_name: profiles.find((p) => p.id === n.author_id)?.full_name ?? "Team member" }));
+    author_name: profiles.find((p) => p.id === n.author_id)?.full_name ?? "Team member",
+    priority: n.priority, resolved_at: n.resolved_at,
+    resolved_by_name: n.resolved_by ? profiles.find((p) => p.id === n.resolved_by)?.full_name ?? "Team member" : null }));
 }
 
 export async function getDocuments(studentId: string): Promise<StudentDocument[]> {

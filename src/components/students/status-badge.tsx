@@ -1,3 +1,4 @@
+import { NOTE_PRIORITY_LABELS, type NotePriority } from "@/types/ui";
 import { statusLabel } from "@/types/db";
 /**
  * Status badges — presentational only.
@@ -176,4 +177,11 @@ export function AdmissionBadge({
 /** Shown beside a student's name once the file is closed (read-only until an admin reopens it). */
 export function ClosedFileBadge({ className }: { className?: string }) {
   return <StatusPill tone="neutral" className={className}>Closed</StatusPill>;
+}
+
+const NOTE_PRIORITY_TONES: Record<NotePriority, StatusTone> = { urgent: "danger", moderate: "warning", normal: "neutral" };
+
+/** A note's priority. Once resolved it is shown muted, so only open notes draw the eye. */
+export function NotePriorityBadge({ priority, resolved = false, className }: { priority: NotePriority; resolved?: boolean; className?: string }) {
+  return <StatusPill tone={resolved ? "neutral" : NOTE_PRIORITY_TONES[priority]} className={className}>{NOTE_PRIORITY_LABELS[priority]}</StatusPill>;
 }

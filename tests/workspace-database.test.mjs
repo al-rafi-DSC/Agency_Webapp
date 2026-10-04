@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -347,5 +347,24 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     });
     assert.deepEqual((await db.query('select closed_at, close_reason from public.students where id=$1',[student])).rows[0], { closed_at: null, close_reason: null });
     assert.equal((await as(workerA, () => db.query("update public.students set phone='2' where id=$1",[student]))).affectedRows, 1, 'reopened files are editable again');
+  });
+
+  await t.test('notes carry a priority; Urgent/Moderate are resolved by whoever may write the file', async () => {
+    const student = await as(admin, () => scalar("select public.create_student('Note','Priority','np@gmail.com','','2026-10-05','international','',$1::uuid[])",[[workerA]]));
+    const add = (priority) => scalar("insert into public.student_notes(student_id,body,priority) values($1,'Passport expires soon',$2) returning id",[student, priority]);
+    const [urgent, normal] = await as(workerA, async () => [await add('urgent'), await add('normal')]);
+    assert.equal(await scalar("select priority from public.student_notes where id=$1",[normal]), 'normal');
+    await as(workerA, async () => {
+      await assert.rejects(add('critical'), /check constraint/);
+      await assert.rejects(db.query('update public.student_notes set resolved_at=now() where id=$1',[urgent]), /permission denied/);
+      await assert.rejects(db.query('select public.resolve_student_note($1)',[normal]), /Only an Urgent or Moderate/);
+    });
+    await as(workerB, () => assert.rejects(db.query('select public.resolve_student_note($1)',[urgent]), /unavailable/));
+    await as(workerA, () => db.query('select public.resolve_student_note($1)',[urgent]));
+    assert.equal(await scalar('select resolved_by from public.student_notes where id=$1',[urgent]), workerA);
+    await as(admin, () => assert.rejects(db.query('select public.resolve_student_note($1)',[urgent]), /already resolved/));
+    const second = await as(workerA, () => add('moderate'));
+    await as(workerA, () => db.query("select public.close_student_file($1,'Finished with this student')",[student]));
+    await as(admin, () => assert.rejects(db.query('select public.resolve_student_note($1)',[second]), /closed or archived/));
   });
 });
