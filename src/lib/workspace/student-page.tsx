@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { updateStudentAction, assignWorkersAction, saveApplicationAction, addNoteAction, uploadDocumentAction, archiveRecordAction, closeStudentFileAction, reopenStudentFileAction } from "@/app/workspace/actions";
 import { CloseFileDialog } from "@/components/students/close-file-dialog";
 import { formatDate } from "@/lib/format";
+import { FolderOpenIcon } from "lucide-react";
 
 type ArchiveKind = Parameters<typeof archiveRecordAction>[0];
 
@@ -84,6 +85,9 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
         detail: `${note.author_name} · ${archivedOn(note.archived_at)}`, action: archiveButton("note", note.id, false, "Restore") }))} /> : null}
     </div>}
     documentsSlot={<div className="space-y-5">
+      {student.drive_link ? <Button nativeButton={false} render={<a href={student.drive_link} target="_blank" rel="noopener noreferrer">
+        <FolderOpenIcon /> Drive Link</a>} />
+        : <p className="text-sm text-muted-foreground">No Drive link yet.{isAdmin ? " Add it under Details." : " An admin adds it."}</p>}
       {documents.length ? <ul className="divide-y">{documents.map((doc) => <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
         <div className="min-w-0"><p className="break-words text-sm font-medium">{doc.name}</p><p className="text-xs text-muted-foreground">{Math.ceil(doc.size_bytes / 1024)} KB · {formatDate(doc.created_at)}</p></div>
         <div className="flex flex-wrap items-center gap-2">
