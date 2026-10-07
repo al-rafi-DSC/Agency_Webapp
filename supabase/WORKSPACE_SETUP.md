@@ -54,6 +54,27 @@ hosting, existing account roles, or passwords.
     documents page — see below). Additive: **apply it before deploying the app
     code**, which reads the new table. The previous version keeps working.
 
+13. Run `migrations/20261009100000_remove_worker.sql` (Remove worker — see
+    below). Additive: **apply it before deploying the app code**, which reads
+    `worker_details.removed_at`. The previous version keeps working.
+
+## Remove worker (2026-10-09)
+
+The owner chose "remove, keep history": a worker is never deleted. An Admin
+removes one from the worker's page (Workers → name → Remove worker), through
+`set_worker_removed(worker_id, removed)`:
+
+- Admin only; never yourself; staff accounts only.
+- Removing sets `worker_details.removed_at/removed_by` and makes the account
+  **inactive**, so the worker loses all access at once.
+- The worker leaves the Workers roster, workload panels and assignment
+  dropdowns. Their name stays on notes, activity and assignment history. Files
+  still assigned to them stay assigned and show under "Needs attention" for
+  manual reassignment, as for any inactive worker.
+- Workers → Removed workers lists them with **Restore**. Restoring keeps the
+  account inactive; the Admin sets Active on the worker's page afterwards.
+  `save_worker()` refuses Active for a removed worker.
+
 ## Important documents (2026-10-08)
 
 - `important_documents`: title, HTTPS link, `sort_order`. Agency-wide, not

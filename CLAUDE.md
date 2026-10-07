@@ -78,6 +78,13 @@ staff, restorable). Seeded with the owner's four files as "Document 1–4".
 Migration `20261008100000_important_documents.sql` (additive — apply before
 deploying the app code).
 
+**Added 2026-10-09** — an Admin can **remove a worker** (owner's choice:
+"remove, keep history"). Nothing is deleted: `set_worker_removed()` marks
+`worker_details.removed_at`, makes the account inactive, and hides the worker
+from rosters and dropdowns; their history stays. Workers → Removed workers
+restores them (as Inactive). Migration `20261009100000_remove_worker.sql`
+(additive — apply before deploying the app code).
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

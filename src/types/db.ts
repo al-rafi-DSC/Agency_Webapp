@@ -89,6 +89,8 @@ export interface Staff {
   address?: string;
   joined_on?: string | null;
   left_on?: string | null;
+  /** Set when an Admin removed the worker. Nothing is deleted; see remove_worker migration. */
+  removed_at?: string | null;
 }
 
 /** PRD §5.2 — one row per university a student applies to. */

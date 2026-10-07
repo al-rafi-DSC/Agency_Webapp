@@ -191,6 +191,15 @@ export async function saveWorkerAction(workerId: string, _state: ActionState, da
   });
 }
 
+/** Removes a worker from the workspace (or restores one). Nothing is deleted; the database makes the account inactive. */
+export async function setWorkerRemovedAction(workerId: string, removed: boolean, _state: ActionState, _data: FormData): Promise<ActionState> {
+  void _state; void _data;
+  return mutate(true, async (client) => {
+    const { error } = await client.rpc("set_worker_removed", { p_worker_id: uuid(workerId), p_removed: removed === true });
+    check(error);
+  });
+}
+
 /** "link" applies a staff-form request to the existing account with that email; "dismiss" closes it. */
 export async function resolveStaffRegistrationAction(id: string, action: "link" | "dismiss", _state: ActionState, _data: FormData): Promise<ActionState> {
   void _state; void _data;

@@ -32,7 +32,7 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
   const student = await getStudent(id, workspace);
   if (!student) notFound();
   const [workers, statuses, allNotes, activity, now] = await Promise.all([
-    getWorkers(), getWorkflowStatuses(), getNotes(id), getActivity(id, workspace), workspaceNow(),
+    getWorkers({ includeRemoved: true }), getWorkflowStatuses(), getNotes(id), getActivity(id, workspace), workspaceNow(),
   ]);
   const notes = allNotes.filter((n) => !n.archived_at);
   const archivedFile = Boolean(student.archived_at);

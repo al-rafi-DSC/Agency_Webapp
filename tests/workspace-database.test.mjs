@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql', '20261008100000_important_documents.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql', '20261008100000_important_documents.sql', '20261009100000_remove_worker.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -431,5 +431,29 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     await db.exec('set role anon');
     try { await assert.rejects(db.query('select * from public.important_documents'), /permission denied/); }
     finally { await db.exec('reset role'); }
+  });
+
+  await t.test('removing a worker: admin only, blocks access, keeps every record, and restores without reactivating', async () => {
+    const assignmentsBefore = await scalar('select count(*) from public.student_staff_assignments where worker_id=$1',[workerB]);
+    const notesBefore = await scalar('select count(*) from public.student_notes where author_id=$1',[workerB]);
+    await as(workerA, () => assert.rejects(db.query('select public.set_worker_removed($1,true)',[workerB]), /Only an admin/));
+    await as(admin, () => assert.rejects(db.query('select public.set_worker_removed($1,true)',[admin]), /cannot remove yourself/));
+    await as(admin, () => assert.rejects(db.query('select public.set_worker_removed($1,true)',[developer]), /Staff account not found/));
+    await as(workerB, () => assert.rejects(db.query("update public.worker_details set removed_at=now() where profile_id=$1",[workerB]), /permission denied/));
+
+    await as(admin, () => db.query('select public.set_worker_removed($1,true)',[workerB]));
+    assert.equal(await scalar('select status::text from public.profiles where id=$1',[workerB]), 'inactive');
+    assert.equal(await scalar('select removed_by from public.worker_details where profile_id=$1',[workerB]), admin);
+    assert.equal(await as(workerB, () => scalar('select count(*) from public.students')), 0, 'a removed worker sees nothing');
+    assert.equal(await scalar('select count(*) from public.profiles where id=$1',[workerB]), 1, 'the account row is kept');
+    assert.equal(await scalar('select count(*) from public.student_staff_assignments where worker_id=$1',[workerB]), assignmentsBefore, 'assignments are kept for reassignment');
+    assert.equal(await scalar('select count(*) from public.student_notes where author_id=$1',[workerB]), notesBefore, 'notes keep their author');
+    await as(admin, () => assert.rejects(db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active')",[workerB]), /Restore this worker/));
+
+    await as(admin, () => db.query('select public.set_worker_removed($1,false)',[workerB]));
+    assert.equal(await scalar('select removed_at from public.worker_details where profile_id=$1',[workerB]), null);
+    assert.equal(await scalar('select status::text from public.profiles where id=$1',[workerB]), 'inactive', 'restoring does not reactivate');
+    await as(admin, () => db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active')",[workerB]));
+    assert.equal(await as(workerB, () => scalar('select count(*) from public.students')) > 0, true, 'reactivated worker sees their files again');
   });
 });

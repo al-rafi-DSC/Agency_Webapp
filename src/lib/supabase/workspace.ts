@@ -13,7 +13,7 @@ type Profile = Staff & { status: "active" | "inactive" };
 type StudentRow = Omit<StudentWithApplications, "applications" | "archived_applications" | "assigned_workers" | "assigned_staff" | "assigned_staff_id">;
 type Application = UniversityApplication & { application_status_id: string | null; scholarship_status_id: string | null };
 type Assignment = { id: string; student_id: string; worker_id: string; assigned_at: string; ended_at: string | null };
-type WorkerDetails = { profile_id: string; phone: string; gender: string; address: string; joined_on: string | null; left_on: string | null };
+type WorkerDetails = { profile_id: string; phone: string; gender: string; address: string; joined_on: string | null; left_on: string | null; removed_at: string | null };
 type History = { id: string; application_id: string; student_id: string; actor_id: string | null; occurred_at: string; before_data: UniversityApplication | null; after_data: UniversityApplication };
 
 function databaseError(message: string): never {
@@ -115,8 +115,21 @@ export async function getStudent(id: string, previewAs: "admin" | "staff" = "adm
 export async function getArchivedStudents() {
   return (await readWorkspace()).students.filter((s) => s.archived_at).map(openView);
 }
-export async function getWorkers() { return (await readWorkspace()).workers; }
-export async function getWorker(id: string) { return (await getWorkers()).find((w) => w.id === id) ?? null; }
+/**
+ * The worker roster. Removed workers are left out of rosters, workload panels
+ * and dropdowns; pass `includeRemoved` where a file still assigned to one must
+ * show them (the assign control warns that saving drops the assignment).
+ */
+export async function getWorkers({ includeRemoved = false }: { includeRemoved?: boolean } = {}) {
+  const workers = (await readWorkspace()).workers;
+  return includeRemoved ? workers : workers.filter((w) => !w.removed_at);
+}
+/** Includes a removed worker, so an admin can open and restore them. */
+export async function getWorker(id: string) { return (await getWorkers({ includeRemoved: true })).find((w) => w.id === id) ?? null; }
+export async function getRemovedWorkers() {
+  return (await getWorkers({ includeRemoved: true })).filter((w) => w.removed_at)
+    .sort((a, b) => (b.removed_at ?? "").localeCompare(a.removed_at ?? ""));
+}
 export async function getWorkflowStatuses() { return (await readWorkspace()).statuses; }
 /** Waiting requests from the staff details form. RLS returns rows to admins only. */
 export async function getStaffRegistrations(): Promise<StaffRegistration[]> {
@@ -125,7 +138,7 @@ export async function getStaffRegistrations(): Promise<StaffRegistration[]> {
   const { data, error } = await client.from("staff_registrations").select("id,full_name,email,phone,gender,address,submitted_at")
     .eq("status", "pending").order("submitted_at", { ascending: false });
   if (error) databaseError(error.message);
-  const workers = await getWorkers();
+  const workers = await getWorkers({ includeRemoved: true });
   return data.map((r) => ({ ...r, has_account: workers.some((w) => w.email.toLowerCase() === r.email) }));
 }
 /**
@@ -154,7 +167,10 @@ export async function getStudentsForWorker(id: string) {
 export async function getDashboardStats(previewAs: "admin" | "staff" = "admin") { return dashboardStats(await getStudents(previewAs)); }
 export async function getNeedsAttention(previewAs: "admin" | "staff" = "admin") { return needsAttention(await getStudents(previewAs)); }
 export async function getStaffWorkload() { return staffWorkload(await getStudents(), await getWorkers()); }
-export async function getStaffWorkloadFor(id: string) { return (await getStaffWorkload()).find((w) => w.staff.id === id) ?? null; }
+/** One worker's caseload — a removed worker included, since their files may still await reassignment. */
+export async function getStaffWorkloadFor(id: string) {
+  return staffWorkload(await getStudents(), await getWorkers({ includeRemoved: true })).find((w) => w.staff.id === id) ?? null;
+}
 /** Shared Drive files for every active account. RLS hides archived rows from staff; admins receive them for restore. */
 export async function getImportantDocuments(): Promise<ImportantDocument[]> {
   if (isUiPreview()) return ["16tyLCB_ooyG5WzBj81i5SA1vHAyCsXwx", "1QdpEhDzW9SK0dq5Tzq0S0LJwNxG9U75l", "1Z1d3LeQ2utlRpS-ccfpuSeyXv2bK6p1X", "1hITBUAcc3mmeyBL9I4FzzbvqUC3w6YlX"]
