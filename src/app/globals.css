@@ -92,24 +92,26 @@
 }
 
 :root {
-  --background: oklch(0.994 0.002 274);
-  --foreground: oklch(0.19 0.018 274);
+  /* Violet brand, matching the glass sign-in scene (#7c3aed), so signing in
+     and working feel like one product. Neutrals carry a faint violet tint. */
+  --background: oklch(0.984 0.005 293);
+  --foreground: oklch(0.2 0.03 293);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.19 0.018 274);
+  --card-foreground: oklch(0.2 0.03 293);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.19 0.018 274);
+  --popover-foreground: oklch(0.2 0.03 293);
 
-  --primary: oklch(0.516 0.192 274);
-  --primary-foreground: oklch(0.99 0.005 274);
-  --primary-soft: oklch(0.955 0.03 274);
-  --primary-soft-foreground: oklch(0.43 0.17 274);
+  --primary: oklch(0.541 0.247 293);
+  --primary-foreground: oklch(0.99 0.005 293);
+  --primary-soft: oklch(0.955 0.032 293);
+  --primary-soft-foreground: oklch(0.45 0.21 293);
 
-  --secondary: oklch(0.968 0.004 274);
-  --secondary-foreground: oklch(0.24 0.02 274);
-  --muted: oklch(0.968 0.004 274);
-  --muted-foreground: oklch(0.522 0.017 274);
-  --accent: oklch(0.962 0.012 274);
-  --accent-foreground: oklch(0.36 0.1 274);
+  --secondary: oklch(0.965 0.008 293);
+  --secondary-foreground: oklch(0.25 0.03 293);
+  --muted: oklch(0.965 0.008 293);
+  --muted-foreground: oklch(0.52 0.025 293);
+  --accent: oklch(0.955 0.02 293);
+  --accent-foreground: oklch(0.38 0.15 293);
 
   --success: oklch(0.58 0.135 155);
   --success-foreground: oklch(0.99 0.01 155);
@@ -157,9 +159,9 @@
   --viz-accepted: oklch(0.625 0.15 148);
   --viz-rejected: oklch(0.5 0.2 27);
 
-  --border: oklch(0.916 0.005 274);
-  --input: oklch(0.916 0.005 274);
-  --ring: oklch(0.516 0.192 274);
+  --border: oklch(0.918 0.012 293);
+  --input: oklch(0.9 0.015 293);
+  --ring: oklch(0.541 0.247 293);
 
   /* Categorical ramp — distinguishable by hue AND by lightness, so the
      pipeline visuals survive greyscale printing and colour-vision deficiency. */
@@ -169,37 +171,38 @@
   --chart-4: oklch(0.75 0.145 70);
   --chart-5: oklch(0.62 0.17 305);
 
-  --radius: 0.625rem;
+  --radius: 0.75rem;
 
-  --sidebar: oklch(0.985 0.003 274);
-  --sidebar-foreground: oklch(0.25 0.018 274);
-  --sidebar-primary: oklch(0.516 0.192 274);
-  --sidebar-primary-foreground: oklch(0.99 0.005 274);
-  --sidebar-accent: oklch(0.955 0.022 274);
-  --sidebar-accent-foreground: oklch(0.36 0.13 274);
-  --sidebar-border: oklch(0.915 0.006 274);
-  --sidebar-ring: oklch(0.516 0.192 274);
+  /* The sidebar is the same deep-violet scene in light and dark mode. */
+  --sidebar: oklch(0.19 0.06 295);
+  --sidebar-foreground: oklch(0.94 0.02 293);
+  --sidebar-primary: oklch(0.72 0.17 300);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(1 0 0 / 9%);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.72 0.17 300);
 }
 
 .dark {
-  --background: oklch(0.171 0.012 274);
-  --foreground: oklch(0.962 0.004 274);
-  --card: oklch(0.212 0.014 274);
-  --card-foreground: oklch(0.962 0.004 274);
-  --popover: oklch(0.235 0.015 274);
-  --popover-foreground: oklch(0.962 0.004 274);
+  --background: oklch(0.155 0.028 293);
+  --foreground: oklch(0.962 0.008 293);
+  --card: oklch(0.195 0.034 293);
+  --card-foreground: oklch(0.962 0.008 293);
+  --popover: oklch(0.215 0.036 293);
+  --popover-foreground: oklch(0.962 0.008 293);
 
-  --primary: oklch(0.685 0.158 274);
-  --primary-foreground: oklch(0.17 0.035 274);
-  --primary-soft: oklch(0.3 0.065 274);
-  --primary-soft-foreground: oklch(0.855 0.09 274);
+  --primary: oklch(0.7 0.18 293);
+  --primary-foreground: oklch(0.16 0.04 293);
+  --primary-soft: oklch(0.3 0.08 293);
+  --primary-soft-foreground: oklch(0.86 0.1 293);
 
-  --secondary: oklch(0.272 0.016 274);
-  --secondary-foreground: oklch(0.962 0.004 274);
-  --muted: oklch(0.272 0.016 274);
-  --muted-foreground: oklch(0.708 0.016 274);
-  --accent: oklch(0.302 0.032 274);
-  --accent-foreground: oklch(0.925 0.03 274);
+  --secondary: oklch(0.255 0.035 293);
+  --secondary-foreground: oklch(0.962 0.008 293);
+  --muted: oklch(0.255 0.035 293);
+  --muted-foreground: oklch(0.72 0.03 293);
+  --accent: oklch(0.29 0.05 293);
+  --accent-foreground: oklch(0.93 0.04 293);
 
   --success: oklch(0.7 0.145 155);
   --success-foreground: oklch(0.18 0.04 155);
@@ -231,9 +234,9 @@
   --viz-accepted: oklch(0.655 0.15 150);
   --viz-rejected: oklch(0.545 0.19 25);
 
-  --border: oklch(1 0 0 / 11%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.16 274);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.65 0.18 293);
 
   --chart-1: oklch(0.68 0.16 274);
   --chart-2: oklch(0.71 0.13 245);
@@ -241,14 +244,14 @@
   --chart-4: oklch(0.81 0.13 72);
   --chart-5: oklch(0.72 0.15 305);
 
-  --sidebar: oklch(0.196 0.013 274);
-  --sidebar-foreground: oklch(0.93 0.005 274);
-  --sidebar-primary: oklch(0.685 0.158 274);
-  --sidebar-primary-foreground: oklch(0.17 0.035 274);
-  --sidebar-accent: oklch(0.288 0.035 274);
-  --sidebar-accent-foreground: oklch(0.93 0.04 274);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.6 0.16 274);
+  --sidebar: oklch(0.135 0.04 295);
+  --sidebar-foreground: oklch(0.94 0.02 293);
+  --sidebar-primary: oklch(0.72 0.17 300);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(1 0 0 / 9%);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.72 0.17 300);
 }
 
 @layer base {
@@ -334,7 +337,15 @@
   /* Shared surface for the stat tiles and panel cards, so every raised element
      on a dashboard shares one shadow language instead of inventing its own. */
   .surface-panel {
-    @apply rounded-xl border bg-card text-card-foreground shadow-[0_1px_2px_0_oklch(0_0_0/0.04)];
+    @apply rounded-2xl border bg-card text-card-foreground;
+    box-shadow:
+      0 1px 2px 0 oklch(0.3 0.06 293 / 0.04),
+      0 8px 24px -12px oklch(0.3 0.1 293 / 0.12);
+  }
+  .dark .surface-panel {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.04),
+      0 10px 30px -14px oklch(0 0 0 / 0.6);
   }
 }
 
@@ -505,5 +516,96 @@
   }
   .theme-glass a:hover {
     color: #ffffff;
+  }
+}
+
+/*
+ * Workspace chrome — the violet "aurora" look for the signed-in panels.
+ *
+ * The sidebar is always a dark violet scene (like the sign-in page), so the
+ * shared primitives inside it (ghost buttons, muted text) are re-pointed here
+ * rather than given sidebar-specific copies. Tooltips and menus are portalled
+ * outside this scope and keep the normal popover.
+ */
+@layer components {
+  .workspace-sidebar {
+    --muted: oklch(1 0 0 / 8%);
+    --muted-foreground: oklch(0.8 0.04 293 / 0.75);
+    --accent: oklch(1 0 0 / 9%);
+    --accent-foreground: oklch(0.99 0 0);
+    --foreground: oklch(0.96 0.015 293);
+    --border: oklch(1 0 0 / 8%);
+    --ring: oklch(0.72 0.17 300);
+    color-scheme: dark;
+    background:
+      radial-gradient(28rem 22rem at -20% -10%, oklch(0.45 0.2 300 / 0.45), transparent 60%),
+      radial-gradient(22rem 18rem at 120% 105%, oklch(0.45 0.22 320 / 0.35), transparent 60%),
+      var(--sidebar);
+  }
+
+  .brand-mark {
+    background: linear-gradient(135deg, #7c3aed, #c026d3);
+    box-shadow: 0 0 22px rgb(124 58 237 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.3);
+  }
+
+  .nav-active {
+    background: linear-gradient(90deg, rgb(139 92 246 / 0.32), rgb(192 38 211 / 0.12));
+    box-shadow: inset 0 0 0 1px rgb(196 181 253 / 0.18), 0 6px 18px -8px rgb(124 58 237 / 0.7);
+  }
+
+  /* A soft violet glow at the top of the content well. */
+  .workspace-canvas {
+    background:
+      radial-gradient(60rem 22rem at 70% -8rem, oklch(0.7 0.15 293 / 0.13), transparent 70%),
+      radial-gradient(40rem 18rem at 0% -6rem, oklch(0.75 0.12 330 / 0.08), transparent 70%);
+  }
+  .dark .workspace-canvas {
+    background:
+      radial-gradient(60rem 22rem at 70% -8rem, oklch(0.5 0.2 293 / 0.22), transparent 70%),
+      radial-gradient(40rem 18rem at 0% -6rem, oklch(0.5 0.2 330 / 0.12), transparent 70%);
+  }
+
+  /* Dashboard welcome banner — the same scene as sign-in, in both modes. */
+  .hero-banner {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    color: #fff;
+    background:
+      radial-gradient(40rem 20rem at 100% 0%, rgb(217 70 239 / 0.55), transparent 60%),
+      radial-gradient(30rem 18rem at 0% 100%, rgb(79 70 229 / 0.55), transparent 60%),
+      linear-gradient(135deg, #2e1065 0%, #5b21b6 50%, #86198f 100%);
+    box-shadow: 0 24px 48px -24px rgb(76 29 149 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.15);
+  }
+  .hero-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: radial-gradient(ellipse at 80% 20%, black 10%, transparent 70%);
+  }
+  .hero-chip {
+    background: rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Stat tiles lift slightly on hover; motion is skipped by reduced-motion. */
+  .stat-tile {
+    position: relative;
+    overflow: hidden;
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .stat-tile:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 2px 0 oklch(0.3 0.06 293 / 0.05),
+      0 18px 36px -16px oklch(0.4 0.18 293 / 0.3);
   }
 }

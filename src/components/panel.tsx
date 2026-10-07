@@ -35,9 +35,9 @@ export function Panel({
 }) {
   return (
     <section className={cn("surface-panel flex flex-col", className)}>
-      <header className="flex items-start justify-between gap-4 border-b px-4 py-3">
-        <div className="min-w-0 space-y-0.5">
-          <h2 className="text-sm font-semibold">{title}</h2>
+      <header className="flex items-start justify-between gap-4 px-5 pt-5 pb-3">
+        <div className="min-w-0 space-y-1">
+          <h2 className="text-base font-semibold tracking-tight">{title}</h2>
           {description ? (
             <p className="text-xs text-muted-foreground">{description}</p>
           ) : null}
@@ -47,7 +47,7 @@ export function Panel({
           (actionHref ? (
             <Link
               href={actionHref}
-              className="inline-flex shrink-0 items-center gap-1 rounded text-xs font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary-soft-foreground outline-none transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {actionLabel ?? "View all"}
               <ArrowRightIcon className="size-3" />
@@ -55,7 +55,7 @@ export function Panel({
           ) : null)}
       </header>
 
-      <div className={cn("flex-1 p-4", contentClassName)}>{children}</div>
+      <div className={cn("flex-1 px-5 pb-5 pt-2", contentClassName)}>{children}</div>
     </section>
   );
 }

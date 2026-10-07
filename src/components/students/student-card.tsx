@@ -12,6 +12,7 @@ import { CalendarDaysIcon, UserIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { formatDate, initials, pluralize } from "@/lib/format";
+import { avatarTone } from "@/components/students/avatar-tone";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { APPLICATION_MARK_CLASSES } from "@/components/status-colors";
 import { ClosedFileBadge, DecisionStatusBadge, NotePriorityBadge } from "@/components/students/status-badge";
@@ -34,18 +35,18 @@ export function StudentCard({
   return (
     <Link
       href={href}
-      className="surface-panel group/card flex flex-col gap-3 p-4 outline-none transition-all duration-150 hover:border-primary/30 hover:shadow-[0_2px_10px_-3px_oklch(0_0_0/0.1)] focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="surface-panel stat-tile group/card flex flex-col gap-4 p-5 outline-none hover:border-primary/40 focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <div className="flex items-start gap-3">
-        <Avatar>
+        <Avatar size="lg">
           {student.photo_url ? (
             <AvatarImage src={student.photo_url} alt="" />
           ) : null}
-          <AvatarFallback>{initials(student.full_name)}</AvatarFallback>
+          <AvatarFallback className={avatarTone(student.full_name)}>{initials(student.full_name)}</AvatarFallback>
         </Avatar>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium group-hover/card:underline">
+          <p className="truncate font-semibold group-hover/card:text-primary">
             {student.full_name}
             {student.closed_at ? <ClosedFileBadge className="ml-2 align-middle" /> : null}
             {student.urgent_notes?.length ? <NotePriorityBadge priority="urgent" className="ml-2 align-middle" /> : null}
@@ -73,7 +74,7 @@ export function StudentCard({
                 key={application.id}
                 title={`${application.university_name} — ${statusLabel(application.application_status, APPLICATION_STATUS_LABELS)}`}
                 className={cn(
-                  "h-1.5 flex-1 rounded-full",
+                  "h-2 flex-1 rounded-full",
                   APPLICATION_MARK_CLASSES[application.application_status] ?? "bg-primary",
                 )}
               />

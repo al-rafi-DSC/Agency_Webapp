@@ -23,6 +23,7 @@ import { ChevronRightIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { formatDate, initials } from "@/lib/format";
+import { avatarTone } from "@/components/students/avatar-tone";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Table,
@@ -38,6 +39,7 @@ import {
 } from "@/types/db";
 import { APPLICATION_MARK_CLASSES } from "@/components/status-colors";
 import { ClosedFileBadge, DecisionStatusBadge, NotePriorityBadge } from "@/components/students/status-badge";
+import { APPLICANT_TYPE_LABELS } from "@/types/db";
 
 export interface StudentsTableProps {
   students: StudentWithApplications[];
@@ -72,7 +74,7 @@ function ApplicationChips({ student }: { student: StudentWithApplications }) {
             key={application.id}
             title={`${application.university_name} — ${statusLabel(application.application_status, APPLICATION_STATUS_LABELS)}`}
             className={cn(
-              "h-1.5 w-4 rounded-full",
+              "h-2 w-5 rounded-full",
               APPLICATION_MARK_CLASSES[application.application_status] ?? "bg-primary",
             )}
           />
@@ -97,10 +99,10 @@ export function StudentsTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-card">
+    <div className="surface-panel overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
+          <TableRow className="bg-muted/50 hover:bg-muted/50 [&>th]:h-11 [&>th]:text-[0.6875rem] [&>th]:font-semibold [&>th]:tracking-wider [&>th]:text-muted-foreground [&>th]:uppercase [&>th:first-child]:pl-5">
             <TableHead>Student</TableHead>
             <TableHead>File opened</TableHead>
             {showAssignedStaff ? <TableHead>Assigned to</TableHead> : null}
@@ -114,25 +116,38 @@ export function StudentsTable({
             const latest = student.applications[0] ?? null;
 
             return (
-              <TableRow key={student.id} className="group/row">
+              <TableRow key={student.id} className="group/row transition-colors hover:bg-primary-soft/40 [&>td]:py-3 [&>td:first-child]:pl-5">
                 <TableCell className="font-medium">
-                  <div className="flex items-center gap-2.5">
-                    <Avatar size="sm">
+                  <div className="flex items-center gap-3">
+                    <Avatar>
                       {student.photo_url ? (
                         <AvatarImage src={student.photo_url} alt="" />
                       ) : null}
-                      <AvatarFallback>
+                      <AvatarFallback className={avatarTone(student.full_name)}>
                         {initials(student.full_name)}
                       </AvatarFallback>
                     </Avatar>
-                    <Link
-                      href={buildHref(student.id)}
-                      className="rounded underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                    >
-                      {student.full_name}
-                    </Link>
-                    {student.closed_at ? <ClosedFileBadge /> : null}
-                    {student.urgent_notes?.length ? <NotePriorityBadge priority="urgent" /> : null}
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Link
+                          href={buildHref(student.id)}
+                          className="rounded font-semibold underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                        >
+                          {student.full_name}
+                        </Link>
+                        {student.closed_at ? <ClosedFileBadge /> : null}
+                        {student.urgent_notes?.length ? <NotePriorityBadge priority="urgent" /> : null}
+                      </div>
+                      {student.file_number || student.applicant_type || student.email ? (
+                        <p className="text-xs font-normal text-muted-foreground">
+                          {[
+                            student.file_number ? `ST-${String(student.file_number).padStart(6, "0")}` : null,
+                            student.applicant_type ? APPLICANT_TYPE_LABELS[student.applicant_type] : null,
+                            student.file_number || student.applicant_type ? null : student.email,
+                          ].filter(Boolean).join(" · ")}
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
                 </TableCell>
 
@@ -144,8 +159,8 @@ export function StudentsTable({
                   <TableCell>
                     {student.assigned_staff ? (
                       <span className="flex items-center gap-2">
-                        <Avatar size="sm" className="size-5">
-                          <AvatarFallback className="text-[0.625rem]">
+                        <Avatar size="sm" className="size-6">
+                          <AvatarFallback className={`text-[0.625rem] ${avatarTone(student.assigned_staff.full_name)}`}>
                             {initials(student.assigned_staff.full_name)}
                           </AvatarFallback>
                         </Avatar>
@@ -177,7 +192,7 @@ export function StudentsTable({
                   <Link
                     href={buildHref(student.id)}
                     aria-label={`Open ${student.full_name}`}
-                    className="flex size-7 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                    className="flex size-8 items-center justify-center rounded-full text-muted-foreground outline-none transition-all group-hover/row:bg-primary group-hover/row:text-primary-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     <ChevronRightIcon className="size-4" />
                   </Link>

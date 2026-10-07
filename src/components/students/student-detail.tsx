@@ -61,7 +61,7 @@ export function StudentDetail({
     <div className="flex flex-col gap-5">
       <Link
         href={backHref}
-        className="inline-flex w-fit items-center gap-1.5 rounded text-sm text-muted-foreground underline-offset-4 outline-none transition-colors hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="inline-flex w-fit items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm outline-none transition-colors hover:border-primary/40 hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <ArrowLeftIcon className="size-3.5" />
         {backLabel}
@@ -71,23 +71,23 @@ export function StudentDetail({
 
       <StudentProfileHeader student={student} assignSlot={assignSlot} />
 
-      <Tabs defaultValue="applications" className="gap-4">
-        <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
-          {detailsSlot ? <TabsTrigger value="details">Details</TabsTrigger> : null}
-          <TabsTrigger value="applications">
+      <Tabs defaultValue="applications" className="gap-5">
+        <TabsList className="h-auto! w-full justify-start gap-1 overflow-x-auto rounded-full! border bg-card p-1! shadow-sm sm:w-fit">
+          {detailsSlot ? <TabsTrigger value="details" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">Details</TabsTrigger> : null}
+          <TabsTrigger value="applications" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">
             Applications
-            <span className="ml-1.5 text-xs text-muted-foreground tabular-nums">
+            <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[0.6875rem] tabular-nums">
               {student.applications.length}
             </span>
           </TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="notes">
+          <TabsTrigger value="activity" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">Activity</TabsTrigger>
+          <TabsTrigger value="notes" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">
             Notes
-            <span className="ml-1.5 text-xs text-muted-foreground tabular-nums">
+            <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[0.6875rem] tabular-nums">
               {notes.length}
             </span>
           </TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="documents" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">Documents</TabsTrigger>
         </TabsList>
 
         <TabsContent value="applications" className="flex flex-col gap-3">
@@ -122,7 +122,7 @@ export function StudentDetail({
         {detailsSlot ? <TabsContent value="details">{detailsSlot}</TabsContent> : null}
 
         <TabsContent value="activity">
-          <div className="surface-panel p-4">
+          <div className="surface-panel p-5">
             <ActivityFeed
               events={activity}
               now={now}
@@ -132,13 +132,13 @@ export function StudentDetail({
         </TabsContent>
 
         <TabsContent value="notes">
-          <div className="surface-panel p-4">
+          <div className="surface-panel p-5">
             {notesSlot ?? <NotesPanel notes={notes} />}
           </div>
         </TabsContent>
 
         <TabsContent value="documents">
-          <div className="surface-panel p-4">
+          <div className="surface-panel p-5">
             {documentsSlot ?? <DocumentsPanel />}
           </div>
         </TabsContent>

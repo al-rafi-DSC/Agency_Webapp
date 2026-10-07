@@ -145,8 +145,8 @@ export function AppShell({
         collapsed && "justify-center",
       )}
     >
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
-        <GraduationCapIcon className="size-4.5" />
+      <span className="brand-mark flex size-9 shrink-0 items-center justify-center rounded-xl text-white">
+        <GraduationCapIcon className="size-5" />
       </span>
       <span
         className={cn(
@@ -154,10 +154,10 @@ export function AppShell({
           collapsed && "w-0 overflow-hidden opacity-0",
         )}
       >
-        <span className="truncate text-sm leading-tight font-semibold">
+        <span className="truncate text-sm leading-tight font-bold tracking-tight">
           Agency Workspace
         </span>
-        <span className="truncate text-xs leading-tight text-muted-foreground">
+        <span className="truncate text-xs leading-tight text-sidebar-foreground/60">
           {workspaceLabel}
         </span>
       </span>
@@ -189,8 +189,8 @@ export function AppShell({
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-svh shrink-0 flex-col gap-5 border-r bg-sidebar px-3 py-4 text-sidebar-foreground transition-[width] duration-200 ease-out md:flex",
-          collapsed ? "w-16" : "w-60",
+          "workspace-sidebar sticky top-0 hidden h-svh shrink-0 flex-col gap-6 border-r border-sidebar-border px-3 py-5 text-sidebar-foreground transition-[width] duration-200 ease-out md:flex",
+          collapsed ? "w-16" : "w-64",
         )}
       >
         {brand}
@@ -223,7 +223,7 @@ export function AppShell({
 
       {/* Mobile drawer — same nav component, so the two cannot drift. */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 gap-5 p-4 sm:max-w-72">
+        <SheetContent side="left" className="workspace-sidebar w-72 gap-6 border-sidebar-border p-4 text-sidebar-foreground sm:max-w-72">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <SheetDescription className="sr-only">
             Move between the sections of the workspace.
@@ -235,8 +235,8 @@ export function AppShell({
       </Sheet>
 
       {/* Content column. min-w-0 stops a wide table stretching the whole page. */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur-md supports-backdrop-filter:bg-background/70 sm:px-6">
+      <div className="workspace-canvas flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl supports-backdrop-filter:bg-background/60 sm:px-6 lg:px-8">
           <Button
             variant="ghost"
             size="icon-sm"
@@ -257,8 +257,16 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-          {previewMode ? <p role="status" className="mb-5 rounded-lg border bg-muted px-4 py-3 text-sm text-muted-foreground">Preview workspace · Sample records · Changes are not saved</p> : null}
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          {previewMode ? (
+            <p
+              role="status"
+              className="mb-6 flex w-fit items-center gap-2 rounded-full border border-warning/30 bg-warning-soft px-3 py-1 text-xs font-medium text-warning-soft-foreground"
+            >
+              <span aria-hidden className="size-1.5 rounded-full bg-warning" />
+              Preview workspace · Sample records · Changes are not saved
+            </p>
+          ) : null}
           {children}
         </main>
       </div>

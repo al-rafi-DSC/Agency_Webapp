@@ -78,7 +78,7 @@ function FilterSelect({
       value={value}
       onValueChange={(next) => onChange(String(next))}
     >
-      <SelectTrigger size="sm" className={cn("min-w-0", className)} aria-label={label}>
+      <SelectTrigger size="sm" className={cn("min-w-0 rounded-full bg-background", className)} aria-label={label}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -226,16 +226,16 @@ export function StudentsExplorer({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3">
+      <div className="surface-panel flex flex-col gap-3 p-3 sm:p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-0 flex-1 sm:max-w-xs">
-            <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative min-w-0 flex-1 sm:max-w-sm">
+            <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search students or universities…"
               aria-label="Search students"
-              className="h-8 pl-8"
+              className="h-10 rounded-full bg-background pl-9"
             />
             {query ? (
               <button
@@ -251,10 +251,11 @@ export function StudentsExplorer({
 
           {/* View switch. Sits at the end of the row so the filters read as a
               group and the view control reads as separate from them. */}
-          <div className="ml-auto flex items-center gap-1 rounded-lg border p-0.5">
+          <div className="ml-auto flex items-center gap-1 rounded-full border bg-background p-1">
             <Button
-              variant={view === "table" ? "secondary" : "ghost"}
-              size="icon-xs"
+              variant={view === "table" ? "default" : "ghost"}
+              size="icon-sm"
+              className="rounded-full"
               onClick={() => setView("table")}
               aria-label="Table view"
               aria-pressed={view === "table"}
@@ -262,8 +263,9 @@ export function StudentsExplorer({
               <ListIcon />
             </Button>
             <Button
-              variant={view === "cards" ? "secondary" : "ghost"}
-              size="icon-xs"
+              variant={view === "cards" ? "default" : "ghost"}
+              size="icon-sm"
+              className="rounded-full"
               onClick={() => setView("cards")}
               aria-label="Card view"
               aria-pressed={view === "cards"}
@@ -335,7 +337,7 @@ export function StudentsExplorer({
 
           <p
             aria-live="polite"
-            className="ml-auto text-xs text-muted-foreground tabular-nums"
+            className="ml-auto rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary-soft-foreground tabular-nums"
           >
             {filtered.length === students.length
               ? `${students.length} students`
@@ -357,7 +359,7 @@ export function StudentsExplorer({
           buildHref={buildStudentHref}
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((student) => (
             <StudentCard
               key={student.id}

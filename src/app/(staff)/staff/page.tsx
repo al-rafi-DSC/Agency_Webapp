@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
-import { BadgeCheckIcon, ClockIcon, FileTextIcon, UsersIcon } from "lucide-react";
+import Link from "next/link";
+import {
+  AlertTriangleIcon,
+  BadgeCheckIcon,
+  ClockIcon,
+  FileTextIcon,
+  FolderPlusIcon,
+  UsersIcon,
+} from "lucide-react";
 
-import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { DashboardHero } from "@/components/dashboard/dashboard-hero";
 import { Panel } from "@/components/panel";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { AttentionList } from "@/components/dashboard/attention-list";
@@ -12,23 +21,56 @@ import {
   decisionSegments,
 } from "@/components/dashboard/status-segments";
 import { getDashboardStats, getNeedsAttention, getActivity, workspaceNow } from "@/lib/supabase/workspace";
-import { pluralize } from "@/lib/format";
+import { formatDateLong, pluralize } from "@/lib/format";
+import { requireSessionUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "My dashboard" };
 
 
 export default async function StaffDashboardPage() {
-  const [stats, attention, activity, now] = await Promise.all([getDashboardStats("staff"), getNeedsAttention("staff"), getActivity(undefined, "staff"), workspaceNow()]);
+  const [user, stats, attention, activity, now] = await Promise.all([
+    requireSessionUser({ previewAs: "staff", next: "/staff" }),
+    getDashboardStats("staff"),
+    getNeedsAttention("staff"),
+    getActivity(undefined, "staff"),
+    workspaceNow(),
+  ]);
   const awaitingDecision = stats.activeApplications;
 
   return (
     <>
-      <PageHeader
-        title="My dashboard"
-        description="Your assigned students and where each application stands."
-      />
+      <div className="flex flex-col gap-6">
+        <DashboardHero
+          name={user.full_name}
+          dateLabel={formatDateLong(now)}
+          subtitle="Your assigned students and where each application stands."
+          highlights={[
+            { label: "My students", value: stats.totalStudents, icon: UsersIcon },
+            { label: "Needs attention", value: attention.length, icon: AlertTriangleIcon },
+            { label: "Offers", value: stats.acceptedCount, icon: BadgeCheckIcon },
+          ]}
+          actions={
+            <>
+              <Button
+                nativeButton={false}
+                className="bg-white text-violet-700 shadow-lg hover:bg-white/90"
+                render={
+                  <Link href="/staff/students/new">
+                    <FolderPlusIcon />
+                    Open a student file
+                  </Link>
+                }
+              />
+              <Button
+                nativeButton={false}
+                variant="ghost"
+                className="hero-chip text-white hover:bg-white/20 hover:text-white"
+                render={<Link href="/staff/students">My students</Link>}
+              />
+            </>
+          }
+        />
 
-      <div className="flex flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatTile
             label="My students"
@@ -43,12 +85,14 @@ export default async function StaffDashboardPage() {
             value={stats.totalApplications}
             hint={`${stats.activeApplications} submitted and awaiting a decision`}
             icon={FileTextIcon}
+            tone="default"
           />
           <StatTile
             label="Awaiting decision"
             value={awaitingDecision}
             hint="Sent off, no answer back yet."
             icon={ClockIcon}
+            tone="info"
           />
           <StatTile
             label="Offers received"

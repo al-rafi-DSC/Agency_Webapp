@@ -41,7 +41,7 @@ export function SidebarNav({
           {section.label ? (
             <p
               className={cn(
-                "px-2.5 text-[0.6875rem] font-medium tracking-wide text-muted-foreground/80 uppercase transition-opacity duration-150",
+                "px-3 text-[0.6875rem] font-semibold tracking-[0.12em] text-sidebar-foreground/45 uppercase transition-opacity duration-150",
                 collapsed && "pointer-events-none h-0 overflow-hidden opacity-0",
               )}
             >
@@ -58,11 +58,11 @@ export function SidebarNav({
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "group/nav relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm font-medium transition-colors duration-150 outline-none",
+                  "group/nav relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-[background-color,color] duration-150 outline-none",
                   "focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
                   active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                    ? "nav-active text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                   collapsed && "justify-center px-0",
                 )}
               >
@@ -71,7 +71,7 @@ export function SidebarNav({
                 <span
                   aria-hidden
                   className={cn(
-                    "absolute left-0 h-5 w-0.5 rounded-r-full bg-sidebar-primary transition-opacity duration-150",
+                    "absolute -left-3 h-6 w-1 rounded-r-full bg-gradient-to-b from-violet-300 to-fuchsia-400 transition-opacity duration-150",
                     active ? "opacity-100" : "opacity-0",
                   )}
                 />
@@ -79,8 +79,8 @@ export function SidebarNav({
                   className={cn(
                     "size-4 shrink-0 transition-colors",
                     active
-                      ? "text-sidebar-primary"
-                      : "text-muted-foreground group-hover/nav:text-sidebar-foreground",
+                      ? "text-violet-200"
+                      : "text-sidebar-foreground/55 group-hover/nav:text-sidebar-foreground",
                   )}
                 />
                 <span

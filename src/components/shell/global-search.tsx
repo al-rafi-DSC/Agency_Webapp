@@ -70,7 +70,7 @@ export function GlobalSearch({ entries }: { entries: SearchEntry[] }) {
         variant="outline"
         size="sm"
         onClick={() => setOpen(true)}
-        className="w-full max-w-64 justify-start gap-2 text-muted-foreground sm:w-64"
+        className="w-full max-w-72 justify-start gap-2 rounded-full bg-card/70 text-muted-foreground shadow-sm sm:w-72"
       >
         <SearchIcon className="size-3.5" />
         <span className="truncate">Search students…</span>

@@ -55,7 +55,7 @@ export function DistributionBar({
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <div
-        className="flex h-3 w-full gap-0.5 overflow-hidden"
+        className="flex h-3.5 w-full gap-1 overflow-hidden rounded-full bg-muted p-0.5"
         role="img"
         aria-label={visible
           .map(
@@ -67,7 +67,7 @@ export function DistributionBar({
         {visible.map((segment) => (
           <span
             key={segment.key}
-            className={cn("h-full rounded-[4px]", segment.colorClass)}
+            className={cn("h-full rounded-full", segment.colorClass)}
             style={{ width: `${(segment.value / total) * 100}%` }}
           />
         ))}
