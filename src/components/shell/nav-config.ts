@@ -15,6 +15,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   FileTextIcon,
+  FolderOpenIcon,
   CalendarDaysIcon,
   LayoutDashboardIcon,
   SettingsIcon,
@@ -60,6 +61,7 @@ export const adminNav: NavSection[] = [
   {
     label: "Workspace",
     items: [
+      { title: "Important documents", href: "/admin/important-documents", icon: FolderOpenIcon },
       { title: "Workers", href: "/admin/staff", icon: UserCogIcon },
       { title: "Yearly summary", href: "/admin/reports", icon: CalendarDaysIcon },
       { title: "Settings", href: "/admin/settings", icon: SettingsIcon },
@@ -77,6 +79,7 @@ export const staffNav: NavSection[] = [
         exact: true,
       },
       { title: "My students", href: "/staff/students", icon: UsersIcon },
+      { title: "Important documents", href: "/staff/important-documents", icon: FolderOpenIcon },
     ],
   },
 ];

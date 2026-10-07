@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql', '20261008100000_important_documents.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -400,6 +400,36 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     finally { await db.query("update public.profiles set status='active' where id=$1",[workerB]); }
     await db.exec('set role anon');
     try { await assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], {}]), /permission denied/); }
+    finally { await db.exec('reset role'); }
+  });
+
+  await t.test('important documents: every active account reads them, only an admin changes them, archived ones are hidden from staff', async () => {
+    assert.deepEqual((await db.query('select title from public.important_documents order by sort_order')).rows.map(r => r.title),
+      ['Document 1', 'Document 2', 'Document 3', 'Document 4'], 'the four owner-supplied files are seeded');
+    const first = await scalar("select id from public.important_documents where title='Document 1'");
+    await as(workerA, async () => {
+      assert.equal(await scalar('select count(*) from public.important_documents'), 4);
+      await assert.rejects(db.query("insert into public.important_documents(title,url) values('X','https://example.test')"), /row-level security/);
+      assert.equal((await db.query("update public.important_documents set title='Changed' where id=$1",[first])).affectedRows, 0);
+      await assert.rejects(db.query("update public.important_documents set archived_at=now() where id=$1",[first]), /permission denied/);
+      await assert.rejects(db.query("select public.set_archived('important_document',$1,true)",[first]), /Only an admin/);
+    });
+    await as(admin, async () => {
+      await db.query("update public.important_documents set title='Price list' where id=$1",[first]);
+      await assert.rejects(db.query("insert into public.important_documents(title,url) values('Bad','javascript:alert(1)')"), /check constraint/);
+      await db.query("insert into public.important_documents(title,url,sort_order) values('Visa checklist','https://drive.google.com/file/d/x/view',5)");
+      await db.query("select public.set_archived('important_document',$1,true)",[first]);
+      assert.equal(await scalar('select count(*) from public.important_documents'), 5, 'admins still see archived documents');
+      assert.equal((await db.query("update public.important_documents set title='While archived' where id=$1",[first])).affectedRows, 0, 'archived documents are read-only');
+    });
+    assert.equal(await as(workerA, () => scalar('select count(*) from public.important_documents')), 4, 'staff no longer see the archived one');
+    await db.query("update public.profiles set status='inactive' where id=$1",[workerA]);
+    try { assert.equal(await as(workerA, () => scalar('select count(*) from public.important_documents')), 0, 'inactive accounts see nothing'); }
+    finally { await db.query("update public.profiles set status='active' where id=$1",[workerA]); }
+    await as(admin, () => db.query("select public.set_archived('important_document',$1,false)",[first]));
+    assert.equal(await scalar('select title from public.important_documents where id=$1',[first]), 'Price list', 'restored, nothing deleted');
+    await db.exec('set role anon');
+    try { await assert.rejects(db.query('select * from public.important_documents'), /permission denied/); }
     finally { await db.exec('reset role'); }
   });
 });

@@ -74,3 +74,13 @@ export interface YearlyReport {
   approved_at: string | null;
   approved_by: string | null;
 }
+
+/** An agency-wide shared file (Google Drive link) on the Important documents page. Not tied to a student. */
+export interface ImportantDocument {
+  id: string;
+  title: string;
+  url: string;
+  sort_order: number;
+  /** Only admins ever receive archived rows (RLS). */
+  archived_at: string | null;
+}

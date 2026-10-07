@@ -254,7 +254,24 @@ export async function uploadDocumentAction(studentId: string, _state: ActionStat
   });
 }
 
-const ARCHIVE_KINDS = ["student", "application", "note", "document"] as const;
+const ARCHIVE_KINDS = ["student", "application", "note", "document", "important_document"] as const;
+/** Admin only (RLS and the action). A null id adds a new document. */
+export async function saveImportantDocumentAction(documentId: string | null, _state: ActionState, data: FormData): Promise<ActionState> {
+  return mutate(true, async (client) => {
+    const url = urlField(data, "url", true);
+    if (!url) throw new Error("Enter the document's HTTPS link.");
+    const order = Number(textField(data, "sort_order", 6) || "0");
+    if (!Number.isInteger(order) || order < 0 || order > 9999) throw new Error("Enter the position as a whole number from 0 to 9999.");
+    const values = { title: textField(data, "title", 200, 1), url, sort_order: order };
+    const query = documentId
+      ? client.from("important_documents").update(values).eq("id", uuid(documentId))
+      : client.from("important_documents").insert(values);
+    const { data: row, error } = await query.select("id").maybeSingle();
+    check(error);
+    if (!row) throw new Error("Document unavailable or archived. Reload the page.");
+  });
+}
+
 export async function archiveRecordAction(kind: (typeof ARCHIVE_KINDS)[number], id: string, archived: boolean, _state: ActionState, _data: FormData): Promise<ActionState> {
   void _state; void _data;
   return mutate(true, async (client) => {

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { assignedWorkers, type Staff, type StudentWithApplications, type UniversityApplication } from "@/types/db";
 import type { ActivityEvent, StudentNote } from "@/types/ui";
-import type { NewStudentFile, StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
+import type { ImportantDocument, NewStudentFile, StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
 import { getSessionUser } from "@/lib/auth/session";
 import { applicationRows, dashboardStats, needsAttention, staffWorkload } from "@/lib/workspace/selectors";
 
@@ -155,6 +155,17 @@ export async function getDashboardStats(previewAs: "admin" | "staff" = "admin") 
 export async function getNeedsAttention(previewAs: "admin" | "staff" = "admin") { return needsAttention(await getStudents(previewAs)); }
 export async function getStaffWorkload() { return staffWorkload(await getStudents(), await getWorkers()); }
 export async function getStaffWorkloadFor(id: string) { return (await getStaffWorkload()).find((w) => w.staff.id === id) ?? null; }
+/** Shared Drive files for every active account. RLS hides archived rows from staff; admins receive them for restore. */
+export async function getImportantDocuments(): Promise<ImportantDocument[]> {
+  if (isUiPreview()) return ["16tyLCB_ooyG5WzBj81i5SA1vHAyCsXwx", "1QdpEhDzW9SK0dq5Tzq0S0LJwNxG9U75l", "1Z1d3LeQ2utlRpS-ccfpuSeyXv2bK6p1X", "1hITBUAcc3mmeyBL9I4FzzbvqUC3w6YlX"]
+    .map((file, i) => ({ id: `preview-doc-${i + 1}`, title: `Document ${i + 1}`, url: `https://drive.google.com/file/d/${file}/view`, sort_order: i + 1, archived_at: null }));
+  const client = await createClient();
+  const { data, error } = await client.from("important_documents").select("id,title,url,sort_order,archived_at")
+    .order("sort_order").order("created_at").limit(500);
+  if (error) databaseError(error.message);
+  return data as ImportantDocument[];
+}
+
 export async function getApplications() { return applicationRows(await getStudents()); }
 export async function workspaceNow() {
   if (isUiPreview()) return (await import("@/lib/mock/students")).MOCK_NOW.toISOString();

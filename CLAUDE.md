@@ -70,6 +70,14 @@ Visa submission/status only exist once a visa appointment date is set.
 Migration `20261007100000_staff_open_student_file.sql` replaces
 `create_student()` — apply it right before deploying.
 
+**Added 2026-10-08** — an **Important documents** page in both panels
+(`/admin/important-documents`, `/staff/important-documents`): agency-wide
+Google Drive links, not tied to a student. Every active account reads them;
+only an Admin adds, renames, reorders or archives (archived = hidden from
+staff, restorable). Seeded with the owner's four files as "Document 1–4".
+Migration `20261008100000_important_documents.sql` (additive — apply before
+deploying the app code).
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

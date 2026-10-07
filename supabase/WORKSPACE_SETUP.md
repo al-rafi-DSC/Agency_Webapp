@@ -50,6 +50,20 @@ hosting, existing account roles, or passwords.
     signature, so the previous app version can no longer open files once it
     is applied, and the new app version cannot open files until it is.
 
+12. Run `migrations/20261008100000_important_documents.sql` (Important
+    documents page — see below). Additive: **apply it before deploying the app
+    code**, which reads the new table. The previous version keeps working.
+
+## Important documents (2026-10-08)
+
+- `important_documents`: title, HTTPS link, `sort_order`. Agency-wide, not
+  per student. RLS: any active account reads open rows; admins also read
+  archived ones. Only admins insert/update; archived rows are read-only.
+- Archive and restore via `set_archived('important_document', id, bool)`.
+  Nothing is deleted.
+- The app only links to Drive. Whether a worker can actually open a file is
+  Google Drive's sharing setting, not this app.
+
 ## Staff open files and student details (2026-10-07)
 
 - `create_student(first_name, surname, phone, gender, file_opened_at,
