@@ -136,7 +136,7 @@ export function StudentProfileHeader({
           <Meta icon={FolderIcon} label="Drive">
             {student.drive_link || student.student_drive_link ? (
               <span className="flex flex-col gap-0.5">
-                {student.drive_link ? <DriveLink href={student.drive_link}>Main Drive Link</DriveLink> : null}
+                {student.drive_link ? <DriveLink href={student.drive_link}>Drive link</DriveLink> : null}
                 {student.student_drive_link ? <DriveLink href={student.student_drive_link}>Student Drive Link</DriveLink> : null}
               </span>
             ) : <span className="text-muted-foreground">No link yet</span>}

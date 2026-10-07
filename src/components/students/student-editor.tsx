@@ -19,8 +19,8 @@ export function StudentEditor({ student, action, isAdmin }: { student: StudentWi
         <p className="text-xs text-muted-foreground">Only an admin can change this date.</p></div>}
     <SelectField name="applicant_type" label="Applicant from" defaultValue={student.applicant_type ?? ""}
       options={[{ value: "", label: "Not set" }, ...APPLICANT_TYPE_OPTIONS]} />
-    {isAdmin ? <TextField name="drive_link" label="Main Drive Link (HTTPS, optional)" value={student.drive_link ?? ""} type="url" maxLength={2048} />
-      : <div className="space-y-2"><p className="text-sm font-medium">Main Drive Link</p>
+    {isAdmin ? <TextField name="drive_link" label="Drive link (HTTPS, optional)" value={student.drive_link ?? ""} type="url" maxLength={2048} />
+      : <div className="space-y-2"><p className="text-sm font-medium">Drive link</p>
         {student.drive_link ? <a href={student.drive_link} target="_blank" rel="noopener noreferrer"
           className="block truncate text-sm text-primary underline-offset-4 hover:underline">{student.drive_link}</a>
           : <p className="text-sm text-muted-foreground">Not added yet.</p>}

@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql', '20261008100000_important_documents.sql', '20261009100000_remove_worker.sql', '20261010100000_student_drive_link.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql', '20261008100000_important_documents.sql', '20261009100000_remove_worker.sql', '20261010100000_student_drive_link.sql', '20261010110000_worker_main_drive_link.sql', '20261010120000_open_file_student_drive_link.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -272,6 +272,19 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     await as(admin, () => db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active','female','New Street')",[workerB]));
     assert.deepEqual((await db.query('select gender, address from public.worker_details where profile_id=$1',[workerB])).rows[0], { gender: 'female', address: 'New Street' });
     await as(workerA, () => assert.rejects(db.query("select public.save_worker($1,'Hacked','1',null,null,'active','male','x')",[workerB]), /Only an admin/));
+    // Main Drive Link: admin-only, kept when omitted, cleared with '', readable only by the worker it belongs to.
+    await as(admin, () => db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active',null,null,'https://drive.google.com/drive/folders/bee')",[workerB]));
+    await as(admin, () => db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active')",[workerB]));
+    assert.equal(await scalar('select main_drive_link from public.worker_details where profile_id=$1',[workerB]), 'https://drive.google.com/drive/folders/bee', 'an omitted Main Drive Link is kept');
+    await as(admin, () => assert.rejects(db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active',null,null,'http://x.test')",[workerB]), /check constraint/));
+    await as(workerB, async () => {
+      assert.equal(await scalar('select main_drive_link from public.worker_details where profile_id=$1',[workerB]), 'https://drive.google.com/drive/folders/bee');
+      await assert.rejects(db.query("update public.worker_details set main_drive_link='https://evil.test' where profile_id=$1",[workerB]), /permission denied/);
+      await assert.rejects(db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active',null,null,'https://evil.test')",[workerB]), /Only an admin/);
+    });
+    await as(workerA, async () => assert.equal(await scalar('select count(*) from public.worker_details where profile_id=$1',[workerB]), 0, 'another worker cannot read it'));
+    await as(admin, () => db.query("select public.save_worker($1,'Worker Bee','777',null,null,'active',null,null,'')",[workerB]));
+    assert.equal(await scalar('select main_drive_link from public.worker_details where profile_id=$1',[workerB]), null, "'' clears the link");
     assert.equal(await scalar('select full_name from public.profiles where id=$1',[admin]), 'Owner');
     assert.equal(await scalar("select count(*) from public.staff_registrations where status='dismissed'"), 1);
 
@@ -376,13 +389,14 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
       referral: 'Friend', intake_session: '2027/28', program: 'master', pre_enrollment_status: 'submitted', visa_appointment_date: '2027-03-01',
       visa_file_submitted: 'true', visa_status: 'approved', visa_country: 'Bangladesh', date_of_birth: '2001-05-06', birth_place: 'Dhaka',
       tax_code: 'NDAHSS01E46Z249X', father_name: 'Father', mother_name: 'Mother', permanent_address: 'Dhaka', present_address: 'Milan',
-      sponsorship: 'sponsor', sponsor_name: 'Uncle Rahim', sponsor_relationship: 'Uncle' };
+      sponsorship: 'sponsor', sponsor_name: 'Uncle Rahim', sponsor_relationship: 'Uncle', student_drive_link: 'https://drive.google.com/drive/folders/nadia' };
     const student = await as(workerB, async () =>
       (await open(['Nadia', 'Hossain', '+880 1', 'female', '2020-01-01', null, 'https://drive.google.com/x', [workerA], details])).rows[0].id);
     assert.deepEqual((await db.query(`select file_opened_at = current_date as today, drive_link, created_by, gender, applicant_type, email,
       file_opening_charge_percent::text, program, visa_file_submitted, visa_status, sponsor_relationship from public.students where id=$1`,[student])).rows[0],
       { today: true, drive_link: null, created_by: workerB, gender: 'female', applicant_type: null, email: 'nadia@gmail.com',
         file_opening_charge_percent: '40.00', program: 'master', visa_file_submitted: true, visa_status: 'approved', sponsor_relationship: 'Uncle' });
+    assert.equal(await scalar('select student_drive_link from public.students where id=$1',[student]), 'https://drive.google.com/drive/folders/nadia', 'staff paste the Student Drive Link when opening the file');
     assert.deepEqual((await db.query('select worker_id from public.student_staff_assignments where student_id=$1 and ended_at is null',[student])).rows.map(r => r.worker_id),
       [workerB], 'assigned only to the staff member who opened it');
     assert.equal(await as(workerB, () => scalar('select count(*) from public.students where id=$1',[student])), 1);

@@ -7,7 +7,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { StudentForm } from "@/components/students/student-form";
 import { requireSessionUser } from "@/lib/auth/session";
-import { workspaceNow } from "@/lib/supabase/workspace";
+import { getWorker, workspaceNow } from "@/lib/supabase/workspace";
 
 export const metadata: Metadata = { title: "Open student file" };
 
@@ -16,7 +16,8 @@ export default async function StaffNewStudentPage() {
   const user = await requireSessionUser({ previewAs: "staff", next: "/staff/students/new" });
   // Admins pick the date, Drive link and worker on their own form.
   if (user.role === "admin" || user.role === "superadmin") redirect("/admin/students/new");
-  const today = (await workspaceNow()).slice(0, 10);
+  const [now, worker] = await Promise.all([workspaceNow(), getWorker(user.id)]);
+  const today = now.slice(0, 10);
 
   return (
     <>
@@ -37,6 +38,7 @@ export default async function StaffNewStudentPage() {
         <StudentForm action={createStudentAction}
           staff={[]}
           isAdmin={false}
+          mainDriveLink={worker?.main_drive_link}
           defaultFileOpenedAt={today}
           cancelHref="/staff/students"
         />

@@ -74,7 +74,7 @@ function studentDetails(data: FormData) {
     birth_place: textField(data, "birth_place", 200), tax_code: textField(data, "tax_code", 40),
     father_name: textField(data, "father_name", 200), mother_name: textField(data, "mother_name", 200),
     permanent_address: textField(data, "permanent_address", 500), present_address: textField(data, "present_address", 500),
-    sponsorship,
+    sponsorship, student_drive_link: urlField(data, "student_drive_link", true),
     sponsor_name: sponsored ? textField(data, "sponsor_name", 200, 1) : "",
     sponsor_relationship: sponsored ? textField(data, "sponsor_relationship", 200, 1) : "",
   };
@@ -111,7 +111,6 @@ export async function updateStudentAction(studentId: string, _state: ActionState
     const { data: row, error } = await client.from("students").update({
       first_name: textField(data, "first_name", 100, 1), surname: textField(data, "surname", 100, 1),
       phone: textField(data, "phone", 80), photo_url: urlField(data, "photo_url", true),
-      student_drive_link: urlField(data, "student_drive_link", true),
       applicant_type: applicantType(data, false), gender: gender || null, ...studentDetails(data),
       ...(data.has("file_opened_at") ? { file_opened_at: dateField(data, "file_opened_at", true) } : {}),
       ...(data.has("drive_link") ? { drive_link: urlField(data, "drive_link", true) } : {}),
@@ -187,7 +186,7 @@ export async function saveWorkerAction(workerId: string, _state: ActionState, da
     if (gender && !isGender(gender)) throw new Error("Choose a gender.");
     const { error } = await client.rpc("save_worker", { p_worker_id: uuid(workerId), p_full_name: textField(data, "full_name", 200, 2),
       p_phone: textField(data, "phone", 80), p_joined_on: dateField(data, "joined_on"), p_left_on: dateField(data, "left_on"), p_status: status,
-      p_gender: gender, p_address: textField(data, "address", 500) });
+      p_gender: gender, p_address: textField(data, "address", 500), p_main_drive_link: urlField(data, "main_drive_link", true) ?? "" });
     check(error);
   });
 }

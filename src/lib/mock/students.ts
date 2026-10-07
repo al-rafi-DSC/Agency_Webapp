@@ -61,6 +61,7 @@ export const mockStaff: Staff[] = [
     role: "staff",
     avatar_url: null,
     created_at: "2026-07-02T09:00:00.000Z",
+    main_drive_link: "https://drive.google.com/drive/folders/preview-nadia",
   },
   {
     id: "staff-2",

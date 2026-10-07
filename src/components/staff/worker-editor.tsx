@@ -11,6 +11,7 @@ export function WorkerEditor({ worker, action }: { worker: Staff; action: FormAc
     <TextField name="address" label="Address" maxLength={500} value={worker.address ?? ""} />
     <TextField name="joined_on" label="Joined on" type="date" value={worker.joined_on ?? ""} />
     <TextField name="left_on" label="Left on" type="date" value={worker.left_on ?? ""} />
+    <div className="sm:col-span-2"><TextField name="main_drive_link" label="Main Drive Link (HTTPS, optional)" type="url" maxLength={2048} value={worker.main_drive_link ?? ""} /></div>
     <SelectField name="status" label="Account status" defaultValue={worker.status ?? "active"} options={[{ value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }]} />
   </div><p className="text-sm text-muted-foreground">Inactive workers lose workspace access. Their assignments stay available for manual reassignment.</p></MutationForm>;
 }

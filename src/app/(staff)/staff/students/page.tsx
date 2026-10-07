@@ -6,13 +6,20 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { StudentsExplorer } from "@/components/students/students-explorer";
 import { StudentsSummary } from "@/components/students/students-summary";
-import { getStudents } from "@/lib/supabase/workspace";
+import { MainDriveLink } from "@/components/staff/main-drive-link";
+import { getStudents, getWorker } from "@/lib/supabase/workspace";
+import { requireSessionUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "My students" };
 
 
 export default async function StaffStudentsPage() {
-  const students = await getStudents("staff");
+  const [user, students] = await Promise.all([
+    requireSessionUser({ previewAs: "staff", next: "/staff/students" }),
+    getStudents("staff"),
+  ]);
+  // RLS returns only this worker's own worker_details row.
+  const worker = await getWorker(user.id);
 
   return (
     <>
@@ -32,6 +39,10 @@ export default async function StaffStudentsPage() {
           />
         }
       />
+
+      <div className="mb-5">
+        <MainDriveLink href={worker?.main_drive_link} />
+      </div>
 
       <div className="mb-5">
         <StudentsSummary students={students} />

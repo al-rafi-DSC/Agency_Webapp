@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/workspace/text-field";
 import { MutationForm, SelectField } from "@/components/workspace/mutation-form";
 import { StudentDetailsFields } from "@/components/students/student-details-fields";
+import { MainDriveLink } from "@/components/staff/main-drive-link";
 import { formatDate } from "@/lib/format";
 import { APPLICANT_TYPE_LABELS, type Staff } from "@/types/db";
 import { GENDER_LABELS, type FormAction } from "@/types/workspace";
@@ -13,12 +14,13 @@ export const GENDER_OPTIONS = Object.entries(GENDER_LABELS).map(([value, label])
 /**
  * `isAdmin` only shapes the form. For staff the database dates the file today,
  * leaves the Drive link empty and assigns it to the staff member who opened it.
+ * `mainDriveLink` is the staff member's own link, shown read-only to copy from.
  */
-export function StudentForm({ staff, defaultFileOpenedAt, cancelHref, action, isAdmin }: {
-  staff: Staff[]; defaultFileOpenedAt: string; cancelHref: string; action: FormAction; isAdmin: boolean;
+export function StudentForm({ staff, defaultFileOpenedAt, cancelHref, action, isAdmin, mainDriveLink }: {
+  staff: Staff[]; defaultFileOpenedAt: string; cancelHref: string; action: FormAction; isAdmin: boolean; mainDriveLink?: string | null;
 }) {
   const active = staff.filter((w) => w.status !== "inactive");
-  return <div className="space-y-4"><MutationForm action={action} submitLabel="Open student file" className="surface-panel p-5">
+  return <div className="space-y-4">{isAdmin ? null : <MainDriveLink href={mainDriveLink} />}<MutationForm action={action} submitLabel="Open student file" className="surface-panel p-5">
     <div className="grid gap-4 sm:grid-cols-2">
       <TextField name="first_name" label="Name" required minLength={1} maxLength={100} />
       <TextField name="surname" label="Surname" required minLength={1} maxLength={100} />
@@ -33,7 +35,8 @@ export function StudentForm({ staff, defaultFileOpenedAt, cancelHref, action, is
           <SelectField name="worker_id" label="Assign worker" options={[{ value: "", label: "Unassigned" }, ...active.map((w) => ({ value: w.id, label: w.full_name }))]} />
           <p className="text-sm text-muted-foreground">{active.length ? "You can add or change workers later on the student file." : "Invite a worker to start assigning files."}</p>
         </div>
-      </> : <p className="text-sm text-muted-foreground sm:col-span-2">The file is assigned to you. An admin adds the Drive link.</p>}
+      </> : <p className="text-sm text-muted-foreground sm:col-span-2">The file is assigned to you.</p>}
+      <div className="sm:col-span-2"><TextField name="student_drive_link" label="Student Drive Link (optional)" type="url" maxLength={2048} /></div>
       <p className="text-sm text-muted-foreground sm:col-span-2">Only Name, Surname, Phone number and Sex are required. Everything below can be filled in later on the student file.</p>
       <StudentDetailsFields />
     </div>

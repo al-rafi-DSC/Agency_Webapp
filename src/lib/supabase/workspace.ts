@@ -13,7 +13,7 @@ type Profile = Staff & { status: "active" | "inactive" };
 type StudentRow = Omit<StudentWithApplications, "applications" | "archived_applications" | "assigned_workers" | "assigned_staff" | "assigned_staff_id">;
 type Application = UniversityApplication & { application_status_id: string | null; scholarship_status_id: string | null };
 type Assignment = { id: string; student_id: string; worker_id: string; assigned_at: string; ended_at: string | null };
-type WorkerDetails = { profile_id: string; phone: string; gender: string; address: string; joined_on: string | null; left_on: string | null; removed_at: string | null };
+type WorkerDetails = { profile_id: string; phone: string; gender: string; address: string; joined_on: string | null; left_on: string | null; removed_at: string | null; main_drive_link: string | null };
 type History = { id: string; application_id: string; student_id: string; actor_id: string | null; occurred_at: string; before_data: UniversityApplication | null; after_data: UniversityApplication };
 
 function databaseError(message: string): never {

@@ -91,6 +91,8 @@ export interface Staff {
   left_on?: string | null;
   /** Set when an Admin removed the worker. Nothing is deleted; see remove_worker migration. */
   removed_at?: string | null;
+  /** HTTPS. Given by the Admin when the worker joins; only an Admin changes it (save_worker()). */
+  main_drive_link?: string | null;
 }
 
 /** PRD §5.2 — one row per university a student applies to. */
@@ -144,7 +146,7 @@ export interface Student {
   phone?: string;
   /** Null on files opened before the field existed. */
   applicant_type?: ApplicantType | null;
-  /** "Main Drive Link": HTTPS Google Drive link. Only an admin can set it (database trigger). */
+  /** HTTPS Google Drive link for this file. Only an admin can set it (database trigger). */
   drive_link?: string | null;
   /** "Student Drive Link": HTTPS. Admin or assigned staff can set it. */
   student_drive_link?: string | null;
