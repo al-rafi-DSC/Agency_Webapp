@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -52,8 +52,8 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     await db.exec('set role anon');
     await assert.rejects(db.query('select * from public.students'), /permission denied/);
     await db.exec('reset role');
-    shared = await as(admin, () => scalar("select public.create_student('Shared','Student','','','2026-01-01','international','',$1::uuid[])", [[workerA, workerB]]));
-    unassigned = await as(admin, () => scalar("select public.create_student('Unassigned','Student','','','2026-01-01','eu_equivalent',null,'{}')"));
+    shared = await as(admin, () => scalar("select public.create_student('Shared','Student','1','male','2026-01-01','international','',$1::uuid[],'{}')", [[workerA, workerB]]));
+    unassigned = await as(admin, () => scalar("select public.create_student('Unassigned','Student','1','male','2026-01-01','eu_equivalent',null,'{}','{}')"));
     submitted = await as(admin, () => scalar("select public.add_workflow_status('application','Sent to university',true,false)"));
     awarded = await as(admin, () => scalar("select public.add_workflow_status('scholarship','Funding confirmed',false,true)"));
     application = await as(workerA, () => scalar("insert into public.university_applications(student_id,university_name) values($1,'Example University') returning id", [shared]));
@@ -282,20 +282,19 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
   await t.test('a student file takes name and surname, applicant type, an admin-only Drive link, and notifies each admin once', async () => {
     // Accounts here are created after the migration, so no admin has a marker yet; the app falls back to the account's creation time.
     assert.equal(await scalar('select count(*) from public.admin_alert_reads'), 0);
-    const student = await as(admin, () => scalar("select public.create_student('  Ahmed ','Rahman Khan','ahmed@gmail.com','555','2026-10-04','international','https://drive.google.com/drive/folders/abc',$1::uuid[])",[[workerA]]));
+    const student = await as(admin, () => scalar("select public.create_student('  Ahmed ','Rahman Khan','555','male','2026-10-04','international','https://drive.google.com/drive/folders/abc',$1::uuid[],jsonb_build_object('email','ahmed@gmail.com'))",[[workerA]]));
     assert.deepEqual((await db.query('select first_name, surname, full_name, applicant_type, drive_link from public.students where id=$1',[student])).rows[0],
       { first_name: 'Ahmed', surname: 'Rahman Khan', full_name: 'Ahmed Rahman Khan', applicant_type: 'international', drive_link: 'https://drive.google.com/drive/folders/abc' });
     await as(admin, async () => {
-      await assert.rejects(db.query("select public.create_student('A','','','','2026-10-04','international','',$1::uuid[])",[[]]), /Enter the surname/);
-      await assert.rejects(db.query("select public.create_student('A','B','','','2026-10-04','somewhere','',$1::uuid[])",[[]]), /EU equivalent or international/);
-      await assert.rejects(db.query("select public.create_student('A','B','','','2026-10-04','international','javascript:alert(1)',$1::uuid[])",[[]]), /check constraint/);
+      await assert.rejects(db.query("select public.create_student('A','','1','male','2026-10-04','international','',$1::uuid[],'{}')",[[]]), /Enter the surname/);
+      await assert.rejects(db.query("select public.create_student('A','B','1','male','2026-10-04','somewhere','',$1::uuid[],'{}')",[[]]), /EU equivalent or international/);
+      await assert.rejects(db.query("select public.create_student('A','B','1','male','2026-10-04','international','javascript:alert(1)',$1::uuid[],'{}')",[[]]), /check constraint/);
     });
     await as(workerA, async () => {
       assert.equal(await scalar('select drive_link from public.students where id=$1',[student]), 'https://drive.google.com/drive/folders/abc', 'assigned staff can open the Drive link');
       await assert.rejects(db.query("update public.students set drive_link='https://example.test/x' where id=$1",[student]), /Only an admin can change the Drive link/);
       await assert.rejects(db.query("update public.students set full_name='Direct' where id=$1",[student]), /permission denied/);
       await db.query("update public.students set surname='Khan', applicant_type='eu_equivalent', drive_link=drive_link where id=$1",[student]);
-      await assert.rejects(db.query('select public.create_student($1,$2,$3,$4,$5,$6,$7,$8::uuid[])',['X','Y','','','2026-10-04','international','',[]]), /Only an admin/);
       assert.equal(await scalar('select count(*) from public.admin_alert_reads'), 0);
       await assert.rejects(db.query('select public.mark_student_files_seen(now())'), /Only an admin/);
     });
@@ -320,7 +319,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
   });
 
   await t.test('application details, and closing a file with a reason; only an admin reopens', async () => {
-    const student = await as(admin, () => scalar("select public.create_student('Close','Me','close@gmail.com','','2026-10-04','international','',$1::uuid[])",[[workerA]]));
+    const student = await as(admin, () => scalar("select public.create_student('Close','Me','1','male','2026-10-04','international','',$1::uuid[],jsonb_build_object('email','close@gmail.com'))",[[workerA]]));
     const complete = await scalar("select id from public.workflow_statuses where category='application' and label='Complete'");
     const app = await as(workerA, () => scalar(`insert into public.university_applications(student_id,university_name,preferred_subject,entrance_exam,entrance_exam_date,
       scholarship_name,scholarship_link,enrollment_fee_paid,application_status_id) values($1,'Milan','Medicine','IMAT','2026-11-20','DSU','https://example.test/dsu',true,$2) returning id`,[student, complete]));
@@ -350,7 +349,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
   });
 
   await t.test('notes carry a priority; Urgent/Moderate are resolved by whoever may write the file', async () => {
-    const student = await as(admin, () => scalar("select public.create_student('Note','Priority','np@gmail.com','','2026-10-05','international','',$1::uuid[])",[[workerA]]));
+    const student = await as(admin, () => scalar("select public.create_student('Note','Priority','1','male','2026-10-05','international','',$1::uuid[],jsonb_build_object('email','np@gmail.com'))",[[workerA]]));
     const add = (priority) => scalar("insert into public.student_notes(student_id,body,priority) values($1,'Passport expires soon',$2) returning id",[student, priority]);
     const [urgent, normal] = await as(workerA, async () => [await add('urgent'), await add('normal')]);
     assert.equal(await scalar("select priority from public.student_notes where id=$1",[normal]), 'normal');
@@ -366,5 +365,41 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     const second = await as(workerA, () => add('moderate'));
     await as(workerA, () => db.query("select public.close_student_file($1,'Finished with this student')",[student]));
     await as(admin, () => assert.rejects(db.query('select public.resolve_student_note($1)',[second]), /closed or archived/));
+  });
+
+  await t.test('staff open a file assigned to themselves, dated today, with no Drive link; the new details are validated', async () => {
+    const open = (args) => db.query('select public.create_student($1,$2,$3,$4,$5,$6,$7,$8::uuid[],$9) as id', args);
+    const details = { email: 'nadia@gmail.com', agency_email: 'nadia.agency@gmail.com', file_opening_charge_percent: '40', passport_number: 'AB1234567',
+      referral: 'Friend', intake_session: '2027/28', program: 'master', pre_enrollment_status: 'submitted', visa_appointment_date: '2027-03-01',
+      visa_file_submitted: 'true', visa_status: 'approved', visa_country: 'Bangladesh', date_of_birth: '2001-05-06', birth_place: 'Dhaka',
+      tax_code: 'NDAHSS01E46Z249X', father_name: 'Father', mother_name: 'Mother', permanent_address: 'Dhaka', present_address: 'Milan',
+      sponsorship: 'sponsor', sponsor_name: 'Uncle Rahim', sponsor_relationship: 'Uncle' };
+    const student = await as(workerB, async () =>
+      (await open(['Nadia', 'Hossain', '+880 1', 'female', '2020-01-01', null, 'https://drive.google.com/x', [workerA], details])).rows[0].id);
+    assert.deepEqual((await db.query(`select file_opened_at = current_date as today, drive_link, created_by, gender, applicant_type, email,
+      file_opening_charge_percent::text, program, visa_file_submitted, visa_status, sponsor_relationship from public.students where id=$1`,[student])).rows[0],
+      { today: true, drive_link: null, created_by: workerB, gender: 'female', applicant_type: null, email: 'nadia@gmail.com',
+        file_opening_charge_percent: '40.00', program: 'master', visa_file_submitted: true, visa_status: 'approved', sponsor_relationship: 'Uncle' });
+    assert.deepEqual((await db.query('select worker_id from public.student_staff_assignments where student_id=$1 and ended_at is null',[student])).rows.map(r => r.worker_id),
+      [workerB], 'assigned only to the staff member who opened it');
+    assert.equal(await as(workerB, () => scalar('select count(*) from public.students where id=$1',[student])), 1);
+    assert.equal(await as(workerA, () => scalar('select count(*) from public.students where id=$1',[student])), 0);
+    await as(workerB, async () => {
+      await assert.rejects(open(['A', 'B', '', 'male', null, null, '', [], {}]), /phone number/);
+      await assert.rejects(open(['A', 'B', '1', null, null, null, '', [], {}]), /sex/);
+      await assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], { file_opening_charge_percent: '140' }]), /check constraint/);
+      await assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], { program: 'phd' }]), /check constraint/);
+      await assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], { visa_status: 'approved' }]), /check constraint/, 'visa outcome needs an appointment date');
+      await assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], { sponsorship: 'sponsor', sponsor_name: 'X' }]), /check constraint/, 'a sponsor needs a relationship');
+      await assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], { sponsorship: 'self', sponsor_name: 'X' }]), /check constraint/);
+      await db.query("update public.students set visa_status='rejected', visa_file_submitted=false where id=$1",[student]);
+      await assert.rejects(db.query("update public.students set file_opened_at='2020-01-01' where id=$1",[student]), /admin/);
+    });
+    await db.query("update public.profiles set status='inactive' where id=$1",[workerB]);
+    try { await as(workerB, () => assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], {}]), /Only an admin or an active staff/)); }
+    finally { await db.query("update public.profiles set status='active' where id=$1",[workerB]); }
+    await db.exec('set role anon');
+    try { await assert.rejects(open(['A', 'B', '1', 'male', null, null, '', [], {}]), /permission denied/); }
+    finally { await db.exec('reset role'); }
   });
 });

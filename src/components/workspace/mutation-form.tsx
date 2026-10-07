@@ -18,13 +18,16 @@ export function MutationForm({ action, children, submitLabel = "Save changes", c
     {state.error ? <p role="alert" className="text-sm text-destructive">{state.error}</p> : state.message ? <p role="status" className="text-sm text-success-soft-foreground">{state.message}</p> : null}
   </form>;
 }
-export function SelectField({ name, label, options, defaultValue = "" }: {
+export function SelectField({ name, label, options, defaultValue = "", onValueChange }: {
   name: string; label: string; options: { value: string; label: string }[]; defaultValue?: string;
+  /** Receives "" for the empty option, like the submitted form value after parsing. */
+  onValueChange?: (value: string) => void;
 }) {
   const id = useId();
   const empty = "__unset";
   return <div className="space-y-2"><Label htmlFor={id}>{label}</Label>
-    <Select name={name} defaultValue={defaultValue || empty} items={Object.fromEntries(options.map((o) => [o.value || empty, o.label]))}>
+    <Select name={name} defaultValue={defaultValue || empty} items={Object.fromEntries(options.map((o) => [o.value || empty, o.label]))}
+      onValueChange={onValueChange ? (value) => onValueChange(String(value ?? "").replace(empty, "")) : undefined}>
       <SelectTrigger id={id} className="w-full"><SelectValue /></SelectTrigger>
       <SelectContent>{options.map((o) => <SelectItem key={o.value || empty} value={o.value || empty}>{o.label}</SelectItem>)}</SelectContent>
     </Select>

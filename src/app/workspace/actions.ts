@@ -7,7 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { dateField, emailField, optionalUuid, textField, urlField, uuid } from "@/lib/workspace/input";
-import { DECISION_STATUSES, isApplicantType } from "@/types/db";
+import { DECISION_STATUSES, isApplicantType, PRE_ENROLLMENT_STATUS_LABELS, PROGRAM_LABELS, SPONSORSHIP_LABELS, VISA_STATUS_LABELS } from "@/types/db";
 import { isGender, type ActionState } from "@/types/workspace";
 import { isNotePriority } from "@/types/ui";
 
@@ -44,32 +44,74 @@ function applicantType(data: FormData, required: boolean) {
   return value;
 }
 
+function choice<T extends string>(data: FormData, name: string, labels: Record<T, string>, message: string): T | null {
+  const value = textField(data, name, 20).replace("__unset", "");
+  if (!value) return null;
+  if (!Object.hasOwn(labels, value)) throw new Error(message);
+  return value as T;
+}
+
+/** The optional detail fields from StudentDetailsFields. Hidden visa and sponsor boxes are absent from the form, so they clear. */
+function studentDetails(data: FormData) {
+  const agencyEmail = textField(data, "agency_email", 320);
+  if (agencyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agencyEmail)) throw new Error("Enter a valid agency Gmail address.");
+  const chargeText = textField(data, "file_opening_charge_percent", 10).replace("%", "").trim();
+  const charge = chargeText ? Number(chargeText) : null;
+  if (charge !== null && (!Number.isFinite(charge) || charge < 0 || charge > 100)) throw new Error("Enter the file opening charge as a percentage from 0 to 100.");
+  const visaDate = dateField(data, "visa_appointment_date");
+  const submitted = visaDate ? choice(data, "visa_file_submitted", { yes: "Yes", no: "No" }, "Choose Yes or No for visa file submission.") : null;
+  const sponsorship = choice(data, "sponsorship", SPONSORSHIP_LABELS, "Choose Self or Sponsor.");
+  const sponsored = sponsorship === "sponsor";
+  return {
+    email: emailField(data), agency_email: agencyEmail, file_opening_charge_percent: charge,
+    passport_number: textField(data, "passport_number", 60), referral: textField(data, "referral", 200),
+    intake_session: textField(data, "intake_session", 60),
+    program: choice(data, "program", PROGRAM_LABELS, "Choose Bachelor or Master."),
+    pre_enrollment_status: choice(data, "pre_enrollment_status", PRE_ENROLLMENT_STATUS_LABELS, "Choose a pre-enrollment summary status."),
+    visa_appointment_date: visaDate, visa_file_submitted: submitted ? submitted === "yes" : null,
+    visa_status: visaDate ? choice(data, "visa_status", VISA_STATUS_LABELS, "Choose Approved or Rejected for the visa status.") : null,
+    visa_country: textField(data, "visa_country", 100), date_of_birth: dateField(data, "date_of_birth"),
+    birth_place: textField(data, "birth_place", 200), tax_code: textField(data, "tax_code", 40),
+    father_name: textField(data, "father_name", 200), mother_name: textField(data, "mother_name", 200),
+    permanent_address: textField(data, "permanent_address", 500), present_address: textField(data, "present_address", 500),
+    sponsorship,
+    sponsor_name: sponsored ? textField(data, "sponsor_name", 200, 1) : "",
+    sponsor_relationship: sponsored ? textField(data, "sponsor_relationship", 200, 1) : "",
+  };
+}
+
+/** Admin or active staff. The database assigns a staff-opened file to its opener, dates it today and drops any Drive link. */
 export async function createStudentAction(_state: ActionState, data: FormData): Promise<ActionState> {
-  const result = await mutate(true, async (client) => {
+  const user = await getSessionUser();
+  const isAdmin = user?.role === "admin" || user?.role === "superadmin";
+  const result = await mutate(false, async (client) => {
     // One worker from the dropdown, or none. Further workers can be added on the file.
-    const worker = optionalUuid(textField(data, "worker_id", 36));
-    const email = emailField(data);
-    if (!email) throw new Error("Enter the student's Gmail address.");
+    const worker = isAdmin ? optionalUuid(textField(data, "worker_id", 36)) : null;
+    const gender = textField(data, "gender", 20).replace("__unset", "");
+    if (!isGender(gender)) throw new Error("Choose the student's sex.");
     const { data: id, error } = await client.rpc("create_student", {
       p_first_name: textField(data, "first_name", 100, 1), p_surname: textField(data, "surname", 100, 1),
-      p_email: email, p_phone: textField(data, "phone", 80), p_file_opened_at: dateField(data, "file_opened_at", true),
-      p_applicant_type: applicantType(data, true), p_drive_link: urlField(data, "drive_link", true) ?? "",
-      p_worker_ids: worker ? [worker] : [],
+      p_phone: textField(data, "phone", 80, 1), p_gender: gender,
+      p_file_opened_at: isAdmin ? dateField(data, "file_opened_at", true) : null,
+      p_applicant_type: applicantType(data, false), p_drive_link: isAdmin ? urlField(data, "drive_link", true) ?? "" : "",
+      p_worker_ids: worker ? [worker] : [], p_details: studentDetails(data),
     });
     check(error);
     return String(id);
   });
-  if (result.id) redirect(`/admin/students/${result.id}`);
+  if (result.id) redirect(`/${isAdmin ? "admin" : "staff"}/students/${result.id}`);
   return result;
 }
 
 export async function updateStudentAction(studentId: string, _state: ActionState, data: FormData): Promise<ActionState> {
   return mutate(false, async (client) => {
+    const gender = textField(data, "gender", 20).replace("__unset", "");
+    if (gender && !isGender(gender)) throw new Error("Choose the student's sex.");
     // Staff forms omit the file-opened date and Drive link; database triggers reject a non-admin change anyway.
     const { data: row, error } = await client.from("students").update({
       first_name: textField(data, "first_name", 100, 1), surname: textField(data, "surname", 100, 1),
-      email: emailField(data), phone: textField(data, "phone", 80), photo_url: urlField(data, "photo_url", true),
-      applicant_type: applicantType(data, false),
+      phone: textField(data, "phone", 80), photo_url: urlField(data, "photo_url", true),
+      applicant_type: applicantType(data, false), gender: gender || null, ...studentDetails(data),
       ...(data.has("file_opened_at") ? { file_opened_at: dateField(data, "file_opened_at", true) } : {}),
       ...(data.has("drive_link") ? { drive_link: urlField(data, "drive_link", true) } : {}),
     }).eq("id", uuid(studentId)).select("id").maybeSingle();

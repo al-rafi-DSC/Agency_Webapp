@@ -15,7 +15,7 @@ export interface WorkflowStatus {
   archived: boolean;
 }
 
-/** Mirrors the gender CHECK on `worker_details` and `staff_registrations`. */
+/** Mirrors the gender CHECK on `worker_details`, `staff_registrations` and `students` (shown as "Sex"). */
 export const GENDER_LABELS = { male: "Male", female: "Female", other: "Other" } as const;
 export type Gender = keyof typeof GENDER_LABELS;
 export function isGender(value: string): value is Gender { return value in GENDER_LABELS; }
@@ -36,7 +36,7 @@ export interface StaffRegistration {
 /** A student file shown as a dashboard notification until the admin marks it as seen. */
 export interface NewStudentFile {
   student: StudentWithApplications;
-  /** Name of the admin who opened the file; null if that profile is unreadable. */
+  /** Name of the admin or staff member who opened the file; null if that profile is unreadable. */
   opened_by: string | null;
 }
 

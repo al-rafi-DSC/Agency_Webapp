@@ -60,6 +60,16 @@ notes appear in "Needs attention" and as an "Urgent" label in student lists.
 The Documents tab is only a note plus the student's Drive Link button (no
 in-app uploads). Migration `20261005100000_note_priority.sql`.
 
+**Added 2026-10-07** — active staff can open a student file from "My
+students"; the database assigns it to them, dates it today and gives it no
+Drive link. Opening requires only Name, Surname, Phone and Sex. The file also
+records ~20 optional details (passport/Carta d'Identità, codice fiscale,
+program, session, pre-enrollment status, visa fields, family, addresses,
+sponsorship, file opening charge as a percentage — status only, no payment).
+Visa submission/status only exist once a visa appointment date is set.
+Migration `20261007100000_staff_open_student_file.sql` replaces
+`create_student()` — apply it right before deploying.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

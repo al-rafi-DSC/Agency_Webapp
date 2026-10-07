@@ -44,6 +44,36 @@ hosting, existing account roles, or passwords.
     below). **Apply it before deploying the app code that uses it**: the app
     reads the new `priority` column. Additive, so the previous version keeps working.
 
+11. Run `migrations/20261007100000_staff_open_student_file.sql` (staff open
+    files, more student details — see below). **Apply it right before
+    deploying the app code**: it replaces `create_student()` with a new
+    signature, so the previous app version can no longer open files once it
+    is applied, and the new app version cannot open files until it is.
+
+## Staff open files and student details (2026-10-07)
+
+- `create_student(first_name, surname, phone, gender, file_opened_at,
+  applicant_type, drive_link, worker_ids, details jsonb)`. Required: name,
+  surname, phone and sex (`gender`: male/female/other). Gmail and "Applicant
+  from" are now optional. `details` carries the optional columns by name.
+- **Active staff can open a file** ("My students" → Open student file). For a
+  staff caller the function ignores the date, Drive link and worker list: the
+  file is dated today, has no Drive link, and is assigned to that staff member
+  only. It appears in every admin's new-file notifications as usual.
+- New `students` columns, all editable by admin or assigned staff on an open
+  file: `agency_email`, `file_opening_charge_percent` (0–100, a recorded
+  percentage — no payment), `passport_number` (passport or Carta d'Identità,
+  one field), `referral`, `intake_session`, `program` (bachelor/master),
+  `pre_enrollment_status` (not_started/submitted/approved),
+  `visa_appointment_date`, `visa_file_submitted` (yes/no),
+  `visa_status` (approved/rejected), `visa_country`, `date_of_birth`,
+  `birth_place`, `tax_code`, `father_name`, `mother_name`,
+  `permanent_address`, `present_address`, `sponsorship` (self/sponsor),
+  `sponsor_name`, `sponsor_relationship`.
+- CHECKs: visa submission/status need a visa appointment date; a sponsor needs
+  a name and relationship, and "self" has neither. The form shows those boxes
+  only when they apply.
+
 ## Note priority (2026-10-05)
 
 - `student_notes.priority`: `urgent`, `moderate` or `normal` (default), set

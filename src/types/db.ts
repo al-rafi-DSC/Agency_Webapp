@@ -42,6 +42,12 @@ export const APPLICANT_TYPE_LABELS = { eu_equivalent: "EU Equivalent", internati
 export type ApplicantType = keyof typeof APPLICANT_TYPE_LABELS;
 export function isApplicantType(value: string): value is ApplicantType { return Object.hasOwn(APPLICANT_TYPE_LABELS, value); }
 
+/** Mirror the CHECKs in 20261007100000_staff_open_student_file.sql. Sex uses GENDER_LABELS (`@/types/workspace`). */
+export const PROGRAM_LABELS = { bachelor: "Bachelor", master: "Master" } as const;
+export const PRE_ENROLLMENT_STATUS_LABELS = { not_started: "Not started", submitted: "Submitted", approved: "Approved" } as const;
+export const VISA_STATUS_LABELS = { approved: "Approved", rejected: "Rejected" } as const;
+export const SPONSORSHIP_LABELS = { self: "Self", sponsor: "Sponsor" } as const;
+
 export const USER_ROLES = ["admin", "staff", "superadmin"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
@@ -138,7 +144,34 @@ export interface Student {
   applicant_type?: ApplicantType | null;
   /** HTTPS Google Drive link. Only an admin can set it (database trigger). */
   drive_link?: string | null;
-  /** The admin who opened the file. */
+  /** Null on files opened before the field existed. Keys of GENDER_LABELS. */
+  gender?: string | null;
+  agency_email?: string;
+  /** 0–100. A recorded percentage, never a payment. */
+  file_opening_charge_percent?: number | string | null;
+  /** Passport or Carta d'Identità number — one field. */
+  passport_number?: string;
+  referral?: string;
+  intake_session?: string;
+  program?: keyof typeof PROGRAM_LABELS | null;
+  pre_enrollment_status?: keyof typeof PRE_ENROLLMENT_STATUS_LABELS | null;
+  /** The two visa outcome fields below are only set once this date is. */
+  visa_appointment_date?: string | null;
+  visa_file_submitted?: boolean | null;
+  visa_status?: keyof typeof VISA_STATUS_LABELS | null;
+  visa_country?: string;
+  date_of_birth?: string | null;
+  birth_place?: string;
+  tax_code?: string;
+  father_name?: string;
+  mother_name?: string;
+  permanent_address?: string;
+  present_address?: string;
+  /** A sponsor always has a name and relationship; "self" has neither. */
+  sponsorship?: keyof typeof SPONSORSHIP_LABELS | null;
+  sponsor_name?: string;
+  sponsor_relationship?: string;
+  /** The admin or staff member who opened the file. */
   created_by?: string;
   /** Set when an admin archives the file. Archived files are read-only. */
   archived_at?: string | null;
