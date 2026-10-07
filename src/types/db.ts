@@ -144,8 +144,10 @@ export interface Student {
   phone?: string;
   /** Null on files opened before the field existed. */
   applicant_type?: ApplicantType | null;
-  /** HTTPS Google Drive link. Only an admin can set it (database trigger). */
+  /** "Main Drive Link": HTTPS Google Drive link. Only an admin can set it (database trigger). */
   drive_link?: string | null;
+  /** "Student Drive Link": HTTPS. Admin or assigned staff can set it. */
+  student_drive_link?: string | null;
   /** Null on files opened before the field existed. Keys of GENDER_LABELS. */
   gender?: string | null;
   agency_email?: string;

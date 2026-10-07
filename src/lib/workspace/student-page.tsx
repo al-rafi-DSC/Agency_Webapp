@@ -92,9 +92,9 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
     </div>}
     documentsSlot={<div className="space-y-3">
       <p className="text-sm">Upload the documents into the Drive.</p>
-      {student.drive_link ? <Button nativeButton={false} render={<a href={student.drive_link} target="_blank" rel="noopener noreferrer">
-        <FolderOpenIcon /> Drive Link</a>} />
-        : <p className="text-sm text-muted-foreground">No Drive link yet.{isAdmin ? " Add it under Details." : " An admin adds it."}</p>}
+      {student.student_drive_link ? <Button nativeButton={false} render={<a href={student.student_drive_link} target="_blank" rel="noopener noreferrer">
+        <FolderOpenIcon /> Student Drive Link</a>} />
+        : <p className="text-sm text-muted-foreground">No Student Drive Link yet.{readOnly ? "" : " Paste it under Details."}</p>}
     </div>}
   />;
 }

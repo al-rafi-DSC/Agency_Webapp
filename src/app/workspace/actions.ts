@@ -111,6 +111,7 @@ export async function updateStudentAction(studentId: string, _state: ActionState
     const { data: row, error } = await client.from("students").update({
       first_name: textField(data, "first_name", 100, 1), surname: textField(data, "surname", 100, 1),
       phone: textField(data, "phone", 80), photo_url: urlField(data, "photo_url", true),
+      student_drive_link: urlField(data, "student_drive_link", true),
       applicant_type: applicantType(data, false), gender: gender || null, ...studentDetails(data),
       ...(data.has("file_opened_at") ? { file_opened_at: dateField(data, "file_opened_at", true) } : {}),
       ...(data.has("drive_link") ? { drive_link: urlField(data, "drive_link", true) } : {}),

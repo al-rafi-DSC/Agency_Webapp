@@ -27,7 +27,7 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
     grant usage on schema storage to authenticated;
     grant select, insert, delete on storage.objects to authenticated;
   `);
-  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql', '20261008100000_important_documents.sql', '20261009100000_remove_worker.sql']) {
+  for (const file of ['20260907120000_auth_identity.sql', '20260910130000_workspace_data.sql', '20260910131000_student_storage.sql', '20260910150000_advisor_hardening.sql', '20260911090000_archive_and_open_date.sql', '20260930100000_staff_registrations.sql', '20260930140000_student_submissions.sql', '20261004120000_student_file_details.sql', '20261004160000_applications_and_closing.sql', '20261005100000_note_priority.sql', '20261007100000_staff_open_student_file.sql', '20261008100000_important_documents.sql', '20261009100000_remove_worker.sql', '20261010100000_student_drive_link.sql']) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
   }
   for (const [id, role, name] of [[admin,'admin','Owner'],[workerA,'staff','Worker A'],[workerB,'staff','Worker B'],[developer,'superadmin','Developer']]) {
@@ -295,6 +295,9 @@ test('workspace migrations, real Postgres RLS and report snapshots', async (t) =
       await assert.rejects(db.query("update public.students set drive_link='https://example.test/x' where id=$1",[student]), /Only an admin can change the Drive link/);
       await assert.rejects(db.query("update public.students set full_name='Direct' where id=$1",[student]), /permission denied/);
       await db.query("update public.students set surname='Khan', applicant_type='eu_equivalent', drive_link=drive_link where id=$1",[student]);
+      await db.query("update public.students set student_drive_link='https://drive.google.com/drive/folders/student' where id=$1",[student]);
+      assert.equal(await scalar('select student_drive_link from public.students where id=$1',[student]), 'https://drive.google.com/drive/folders/student', 'assigned staff can set the Student Drive Link');
+      await assert.rejects(db.query("update public.students set student_drive_link='http://example.test/x' where id=$1",[student]), /check constraint/);
       assert.equal(await scalar('select count(*) from public.admin_alert_reads'), 0);
       await assert.rejects(db.query('select public.mark_student_files_seen(now())'), /Only an admin/);
     });

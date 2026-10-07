@@ -26,6 +26,15 @@ import { avatarTone } from "@/components/students/avatar-tone";
 import { ClosedFileBadge, NotePriorityBadge } from "@/components/students/status-badge";
 import type { StudentWithApplications } from "@/types/db";
 
+function DriveLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 rounded text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
+      {children} <ExternalLinkIcon className="size-3" />
+    </a>
+  );
+}
+
 function Meta({
   icon: Icon,
   label,
@@ -125,11 +134,11 @@ export function StudentProfileHeader({
           </Meta>
 
           <Meta icon={FolderIcon} label="Drive">
-            {student.drive_link ? (
-              <a href={student.drive_link} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
-                Open Drive folder <ExternalLinkIcon className="size-3" />
-              </a>
+            {student.drive_link || student.student_drive_link ? (
+              <span className="flex flex-col gap-0.5">
+                {student.drive_link ? <DriveLink href={student.drive_link}>Main Drive Link</DriveLink> : null}
+                {student.student_drive_link ? <DriveLink href={student.student_drive_link}>Student Drive Link</DriveLink> : null}
+              </span>
             ) : <span className="text-muted-foreground">No link yet</span>}
           </Meta>
 

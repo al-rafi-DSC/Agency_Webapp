@@ -143,8 +143,13 @@ removes one from the worker's page (Workers → name → Remove worker), through
   Existing names were split at the first space.
 - **Applicant from** (`applicant_type`): `eu_equivalent` or `international`,
   required when a file is opened, null on files opened earlier.
-- **Drive link** (`drive_link`): HTTPS only. Assigned staff can read it; only an
-  admin can set or change it (trigger `guard_drive_link`).
+- **Main Drive Link** (`drive_link`): HTTPS only. Assigned staff can read it;
+  only an admin can set or change it (trigger `guard_drive_link`).
+- **Student Drive Link** (`student_drive_link`, added 2026-10-07 in
+  `20261010100000_student_drive_link.sql`): HTTPS only. Admin or assigned staff
+  can set or change it on the file's Details form; closed files refuse it like
+  every other write. The Documents tab's Drive button opens this link, not
+  the Main Drive Link.
 - **Gmail** is the existing `email` column, required on the open-file form.
 - The open-file form assigns **one** worker from a dropdown; more can still be
   added on the file itself.

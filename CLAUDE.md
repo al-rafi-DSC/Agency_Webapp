@@ -85,6 +85,12 @@ from rosters and dropdowns; their history stays. Workers → Removed workers
 restores them (as Inactive). Migration `20261009100000_remove_worker.sql`
 (additive — apply before deploying the app code).
 
+**Added 2026-10-07 (later)** — a student file has two Drive links: **Main
+Drive Link** (the existing `drive_link`, admin-only) and **Student Drive
+Link** (`student_drive_link`, admin or assigned staff can edit). The
+Documents tab's button opens the Student Drive Link only. Migration
+`20261010100000_student_drive_link.sql` (additive — apply before deploying).
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.
