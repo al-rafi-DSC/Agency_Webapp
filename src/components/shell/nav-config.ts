@@ -15,6 +15,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   FileTextIcon,
+  FolderClosedIcon,
   FolderOpenIcon,
   CalendarDaysIcon,
   LayoutDashboardIcon,
@@ -56,6 +57,7 @@ export const adminNav: NavSection[] = [
         href: "/admin/applications",
         icon: FileTextIcon,
       },
+      { title: "Closed files", href: "/admin/closed-files", icon: FolderClosedIcon },
     ],
   },
   {
@@ -79,6 +81,7 @@ export const staffNav: NavSection[] = [
         exact: true,
       },
       { title: "My students", href: "/staff/students", icon: UsersIcon },
+      { title: "Closed files", href: "/staff/closed-files", icon: FolderClosedIcon },
       { title: "Important documents", href: "/staff/important-documents", icon: FolderOpenIcon },
     ],
   },

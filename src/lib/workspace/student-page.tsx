@@ -45,7 +45,8 @@ export async function renderStudentPage(id: string, workspace: "admin" | "staff"
   const archivedOn = (value?: string | null) => value ? `Archived ${formatDate(value)}` : "Archived";
 
   return <StudentDetail student={student} notes={notes} activity={activity} now={now}
-    backHref={`/${workspace}/students`} backLabel={workspace === "admin" ? "All students" : "My students"}
+    backHref={closedFile && !archivedFile ? `/${workspace}/closed-files` : `/${workspace}/students`}
+    backLabel={closedFile && !archivedFile ? "Closed files" : workspace === "admin" ? "All students" : "My students"}
     buildStudentHref={(studentId) => `/${workspace}/students/${studentId}`}
     noticeSlot={archivedFile ? <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-warning-soft p-4 text-warning-soft-foreground">
       <div className="space-y-1"><p className="text-sm font-medium">{archivedOn(student.archived_at)}. This file is read-only.</p>

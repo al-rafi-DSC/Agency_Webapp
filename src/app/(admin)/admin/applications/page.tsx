@@ -14,7 +14,7 @@ export default async function AdminApplicationsPage() {
     <>
       <PageHeader
         title="Applications"
-        description="One row per university. Application, decision and scholarship all move independently."
+        description="One row per university on open files. Application, decision and scholarship all move independently. Closed files are left out."
       />
 
       <ApplicationsExplorer

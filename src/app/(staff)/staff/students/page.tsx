@@ -7,16 +7,17 @@ import { PageHeader } from "@/components/page-header";
 import { StudentsExplorer } from "@/components/students/students-explorer";
 import { StudentsSummary } from "@/components/students/students-summary";
 import { MainDriveLink } from "@/components/staff/main-drive-link";
-import { getStudents, getWorker } from "@/lib/supabase/workspace";
+import { getClosedStudents, getOpenStudents, getWorker } from "@/lib/supabase/workspace";
 import { requireSessionUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "My students" };
 
 
 export default async function StaffStudentsPage() {
-  const [user, students] = await Promise.all([
+  const [user, students, closed] = await Promise.all([
     requireSessionUser({ previewAs: "staff", next: "/staff/students" }),
-    getStudents("staff"),
+    getOpenStudents("staff"),
+    getClosedStudents("staff"),
   ]);
   // RLS returns only this worker's own worker_details row.
   const worker = await getWorker(user.id);
@@ -25,7 +26,7 @@ export default async function StaffStudentsPage() {
     <>
       <PageHeader
         title="My students"
-        description="Every student assigned to you, with where their applications stand."
+        description="Every open file assigned to you, with where their applications stand. Closed files are under Closed files."
         actions={
           <Button
             nativeButton={false}
@@ -45,7 +46,7 @@ export default async function StaffStudentsPage() {
       </div>
 
       <div className="mb-5">
-        <StudentsSummary students={students} />
+        <StudentsSummary students={students} closedCount={closed.length} closedHref="/staff/closed-files" />
       </div>
 
       <StudentsExplorer

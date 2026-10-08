@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isUiPreview } from "@/lib/supabase/env";
 import { assignedWorkers, type Staff, type StudentWithApplications, type UniversityApplication } from "@/types/db";
 import type { ActivityEvent, StudentNote } from "@/types/ui";
-import type { ImportantDocument, NewStudentFile, StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
+import type { ClosedStudentFile, ImportantDocument, NewStudentFile, StaffRegistration, StudentDocument, WorkflowStatus, YearlyReport } from "@/types/workspace";
 import { getSessionUser } from "@/lib/auth/session";
 import { applicationRows, dashboardStats, needsAttention, staffWorkload } from "@/lib/workspace/selectors";
 
@@ -106,6 +106,21 @@ export async function getStudents(previewAs: "admin" | "staff" = "admin") {
   }
   return students;
 }
+/**
+ * Files still being worked on. A closed file leaves dashboards and student
+ * lists and is listed on the Closed files page instead; it is still readable
+ * (RLS scoping is unchanged) and global search still finds it.
+ */
+export async function getOpenStudents(previewAs: "admin" | "staff" = "admin") {
+  return (await getStudents(previewAs)).filter((s) => !s.closed_at);
+}
+/** Closed files the viewer can read, most recently closed first, with who closed each one where RLS shows it. */
+export async function getClosedStudents(previewAs: "admin" | "staff" = "admin"): Promise<ClosedStudentFile[]> {
+  const { profiles } = await readWorkspace();
+  return (await getStudents(previewAs)).filter((s) => s.closed_at)
+    .sort((a, b) => (b.closed_at ?? "").localeCompare(a.closed_at ?? ""))
+    .map((student) => ({ student, closed_by_name: profiles.find((p) => p.id === student.closed_by)?.full_name ?? null }));
+}
 /** Unlike getStudents, returns an archived file too, so an admin can open and restore it. */
 export async function getStudent(id: string, previewAs: "admin" | "staff" = "admin") {
   const student = (await readWorkspace()).students.find((s) => s.id === id);
@@ -148,7 +163,7 @@ export async function getStaffRegistrations(): Promise<StaffRegistration[]> {
  */
 export async function getNewStudentFiles(): Promise<NewStudentFile[]> {
   // Preview shows the two most recent fixtures so the panel can be designed.
-  if (isUiPreview()) return (await getStudents()).slice(0, 2).map((student) => ({ student, opened_by: null }));
+  if (isUiPreview()) return (await getOpenStudents()).slice(0, 2).map((student) => ({ student, opened_by: null }));
   const user = await getSessionUser();
   if (!user) return [];
   const client = await createClient();
@@ -157,19 +172,19 @@ export async function getNewStudentFiles(): Promise<NewStudentFile[]> {
   const { students, profiles } = await readWorkspace();
   const since = data?.student_files_seen_at ?? profiles.find((p) => p.id === user.id)?.created_at ?? new Date(0).toISOString();
   const after = Date.parse(since);
-  return students.filter((s) => !s.archived_at && Date.parse(s.created_at) > after)
+  return students.filter((s) => !s.archived_at && !s.closed_at && Date.parse(s.created_at) > after)
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .map((s) => ({ student: s, opened_by: profiles.find((p) => p.id === s.created_by)?.full_name ?? null }));
 }
 export async function getStudentsForWorker(id: string) {
   return (await getStudents()).filter((s) => assignedWorkers(s).some((w) => w.id === id));
 }
-export async function getDashboardStats(previewAs: "admin" | "staff" = "admin") { return dashboardStats(await getStudents(previewAs)); }
-export async function getNeedsAttention(previewAs: "admin" | "staff" = "admin") { return needsAttention(await getStudents(previewAs)); }
-export async function getStaffWorkload() { return staffWorkload(await getStudents(), await getWorkers()); }
+export async function getDashboardStats(previewAs: "admin" | "staff" = "admin") { return dashboardStats(await getOpenStudents(previewAs)); }
+export async function getNeedsAttention(previewAs: "admin" | "staff" = "admin") { return needsAttention(await getOpenStudents(previewAs)); }
+export async function getStaffWorkload() { return staffWorkload(await getOpenStudents(), await getWorkers()); }
 /** One worker's caseload — a removed worker included, since their files may still await reassignment. */
 export async function getStaffWorkloadFor(id: string) {
-  return staffWorkload(await getStudents(), await getWorkers({ includeRemoved: true })).find((w) => w.staff.id === id) ?? null;
+  return staffWorkload(await getOpenStudents(), await getWorkers({ includeRemoved: true })).find((w) => w.staff.id === id) ?? null;
 }
 /** Shared Drive files for every active account. RLS hides archived rows from staff; admins receive them for restore. */
 export async function getImportantDocuments(): Promise<ImportantDocument[]> {
@@ -182,7 +197,8 @@ export async function getImportantDocuments(): Promise<ImportantDocument[]> {
   return data as ImportantDocument[];
 }
 
-export async function getApplications() { return applicationRows(await getStudents()); }
+/** Applications on open files only; a closed file's applications stay on its own page. */
+export async function getApplications() { return applicationRows(await getOpenStudents()); }
 export async function workspaceNow() {
   if (isUiPreview()) return (await import("@/lib/mock/students")).MOCK_NOW.toISOString();
   return new Date().toISOString();
@@ -192,7 +208,7 @@ export async function getActivity(studentId?: string, previewAs: "admin" | "staf
   if (studentId && !(await getStudent(studentId, previewAs))) return [];
   if (isUiPreview()) {
     const fixtures = await import("@/lib/mock/activity");
-    return studentId ? fixtures.getMockActivityForStudent(studentId) : fixtures.getMockActivityForStudents((await getStudents(previewAs)).map((s) => s.id), 8);
+    return studentId ? fixtures.getMockActivityForStudent(studentId) : fixtures.getMockActivityForStudents((await getOpenStudents(previewAs)).map((s) => s.id), 8);
   }
   const client = await createClient();
   // Over-fetch the global feed: an admin's rows can include archived records, filtered out below.
@@ -202,9 +218,10 @@ export async function getActivity(studentId?: string, previewAs: "admin" | "staf
   if (error) databaseError(error.message);
   const { profiles, students } = await readWorkspace();
   const archivedApplications = new Set(students.flatMap((s) => s.applications.filter((a) => a.archived_at).map((a) => a.id)));
-  const archivedStudents = new Set(students.filter((s) => s.archived_at).map((s) => s.id));
+  // The dashboard feed leaves out archived and closed files; a file's own page shows its full history.
+  const hiddenStudents = new Set(students.filter((s) => s.archived_at || s.closed_at).map((s) => s.id));
   return (data as History[]).filter((event) => !archivedApplications.has(event.application_id)
-    && (studentId || !archivedStudents.has(event.student_id))).slice(0, studentId ? 100 : 8).map((event) => ({ id: event.id,
+    && (studentId || !hiddenStudents.has(event.student_id))).slice(0, studentId ? 100 : 8).map((event) => ({ id: event.id,
     kind: event.before_data ? "application_status_changed" : "application_added",
     student_id: event.student_id, student_name: students.find((s) => s.id === event.student_id)?.full_name ?? "Student",
     actor_name: profiles.find((p) => p.id === event.actor_id)?.full_name ?? null,

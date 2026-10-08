@@ -99,6 +99,13 @@ stays as "Drive link" under Details. Migrations
 `20261010120000_open_file_student_drive_link.sql` (replaces `create_student()`,
 same signature) — apply before deploying.
 
+**Added 2026-10-09 (later)** — a **Closed files** page in both panels
+(`/admin/closed-files`, `/staff/closed-files`). A closed file is left out of
+dashboards (counts, pipeline, workload, needs attention, activity, new-file
+alerts), the Applications page and the Students / My students lists, and is listed there instead;
+global search still finds it. Readers: `getOpenStudents()` /
+`getClosedStudents()`. App-only — no migration; RLS scoping is unchanged.
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.

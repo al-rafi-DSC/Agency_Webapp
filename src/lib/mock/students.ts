@@ -495,6 +495,9 @@ export const mockStudents: StudentWithApplications[] = [
     file_opened_at: "2026-07-11",
     assigned_staff_id: "staff-1",
     created_at: "2026-07-11T13:00:00.000Z",
+    closed_at: "2026-09-05T10:00:00.000Z",
+    closed_by: "staff-1",
+    close_reason: "Student decided to study in another country.",
     assigned_staff: staffRef("staff-1"),
     applications: [
       application({

@@ -6,6 +6,7 @@
  * student the viewer could not already open.
  */
 
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangleIcon,
@@ -22,14 +23,16 @@ function Chip({
   label,
   value,
   tone,
+  href,
 }: {
   icon: LucideIcon;
   label: string;
   value: number;
   tone: string;
+  href?: string;
 }) {
-  return (
-    <div className="surface-panel flex items-center gap-3 px-4 py-3">
+  const content = (
+    <>
       <span
         aria-hidden
         className={cn(
@@ -43,15 +46,27 @@ function Chip({
         <p className="text-xl leading-none font-bold tabular-nums">{value}</p>
         <p className="mt-1 truncate text-xs text-muted-foreground">{label}</p>
       </div>
-    </div>
+    </>
+  );
+  const className = "surface-panel flex items-center gap-3 px-4 py-3";
+  return href ? (
+    <Link href={href} className={cn(className, "outline-none transition-colors hover:border-primary/40 focus-visible:ring-3 focus-visible:ring-ring/50")}>{content}</Link>
+  ) : (
+    <div className={className}>{content}</div>
   );
 }
 
 export function StudentsSummary({
   students,
   showUnassigned = false,
+  closedCount,
+  closedHref,
 }: {
+  /** Open files only — closed files are counted separately and listed on Closed files. */
   students: StudentWithApplications[];
+  closedCount: number;
+  /** The Closed files page for this panel. */
+  closedHref: string;
   /** Admin only — staff are, by definition, assigned to every file they see. */
   showUnassigned?: boolean;
 }) {
@@ -59,13 +74,12 @@ export function StudentsSummary({
     (s) => !assignedWorkers(s).some((w) => w.status !== "inactive"),
   ).length;
   const urgent = students.filter((s) => s.urgent_notes?.length).length;
-  const closed = students.filter((s) => s.closed_at).length;
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <Chip
         icon={UsersIcon}
-        label="Student files"
+        label="Open files"
         value={students.length}
         tone="from-violet-500 to-fuchsia-500 shadow-violet-500/30"
       />
@@ -79,8 +93,8 @@ export function StudentsSummary({
       ) : (
         <Chip
           icon={UserPlusIcon}
-          label="Open files"
-          value={students.length - closed}
+          label="No university yet"
+          value={students.filter((s) => !s.applications.length).length}
           tone="from-sky-500 to-cyan-400 shadow-sky-500/30"
         />
       )}
@@ -93,7 +107,8 @@ export function StudentsSummary({
       <Chip
         icon={FolderClosedIcon}
         label="Closed files"
-        value={closed}
+        value={closedCount}
+        href={closedHref}
         tone="from-slate-500 to-slate-600 shadow-slate-500/30"
       />
     </div>

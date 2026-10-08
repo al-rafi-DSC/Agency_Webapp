@@ -9,7 +9,7 @@ import { StudentsExplorer } from "@/components/students/students-explorer";
 import { StudentsSummary } from "@/components/students/students-summary";
 import { ArchivedList } from "@/components/workspace/archived-list";
 import { MutationForm } from "@/components/workspace/mutation-form";
-import { getWorkers, getStudents, getArchivedStudents } from "@/lib/supabase/workspace";
+import { getWorkers, getOpenStudents, getClosedStudents, getArchivedStudents } from "@/lib/supabase/workspace";
 import { archiveRecordAction } from "@/app/workspace/actions";
 import { formatDate } from "@/lib/format";
 
@@ -21,8 +21,9 @@ export default async function AdminStudentsPage({
 }: {
   searchParams: Promise<{ assignment?: string }>;
 }) {
-  const [students, staff, archived, params] = await Promise.all([
-    getStudents(),
+  const [students, closed, staff, archived, params] = await Promise.all([
+    getOpenStudents(),
+    getClosedStudents(),
     getWorkers(),
     getArchivedStudents(),
     searchParams,
@@ -32,7 +33,7 @@ export default async function AdminStudentsPage({
     <>
       <PageHeader
         title="Students"
-        description="Every student file, with the workers assigned and current application status."
+        description="Every open student file, with the workers assigned and current application status. Closed files are under Closed files."
         actions={
           <Button
             nativeButton={false}
@@ -48,7 +49,7 @@ export default async function AdminStudentsPage({
       />
 
       <div className="mb-5">
-        <StudentsSummary students={students} showUnassigned />
+        <StudentsSummary students={students} closedCount={closed.length} closedHref="/admin/closed-files" showUnassigned />
       </div>
 
       <StudentsExplorer

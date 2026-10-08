@@ -40,6 +40,12 @@ export interface NewStudentFile {
   opened_by: string | null;
 }
 
+export interface ClosedStudentFile {
+  student: StudentWithApplications;
+  /** Name of the admin or staff member who closed the file; null if that profile is unreadable. */
+  closed_by_name: string | null;
+}
+
 export interface StudentDocument {
   id: string;
   name: string;
