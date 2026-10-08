@@ -55,7 +55,7 @@ const SORTS = {
 type SortKey = keyof typeof SORTS;
 
 /** A labelled select. `items` is what makes the trigger show the label. */
-function FilterSelect({
+export function FilterSelect({
   label,
   value,
   onChange,

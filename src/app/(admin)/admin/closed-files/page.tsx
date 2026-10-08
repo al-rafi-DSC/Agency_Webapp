@@ -19,6 +19,7 @@ export default async function AdminClosedFilesPage() {
       <ClosedFilesList
         files={files}
         studentBasePath="/admin/students"
+        showWorkerFilter
         emptyDescription="When a student file is closed, it moves here."
       />
     </>
