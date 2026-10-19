@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRightIcon, GraduationCapIcon } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { homePathForRole } from "@/lib/auth/roles";
 import { getSessionUser } from "@/lib/auth/session";
@@ -30,8 +31,8 @@ export default async function Home() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6">
       <div className="w-full max-w-md text-center">
-        <span className="mx-auto mb-6 flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <GraduationCapIcon className="size-5" />
+        <span className="mx-auto mb-6 flex size-11 items-center justify-center rounded-xl bg-white ring-1 ring-border">
+          <BrandLogo className="size-8" />
         </span>
 
         <h1 className="text-2xl font-semibold tracking-tight">

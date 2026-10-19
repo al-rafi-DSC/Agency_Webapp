@@ -13,7 +13,8 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { GraduationCapIcon } from "lucide-react";
+
+import { BrandLogo } from "@/components/brand-logo";
 
 export function AuthCard({
   title,
@@ -45,8 +46,8 @@ export function AuthCard({
             href="/"
             className="mb-8 flex items-center justify-center gap-2.5 rounded outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <span className="glass-mark flex size-9 items-center justify-center rounded-xl text-white">
-              <GraduationCapIcon className="size-4.5" />
+            <span className="glass-mark flex size-9 items-center justify-center rounded-xl">
+              <BrandLogo className="size-7" />
             </span>
             <span className="text-sm font-semibold tracking-tight text-white">
               ITUC Workspace
@@ -81,8 +82,8 @@ export function AuthCard({
           href="/"
           className="mb-8 flex items-center justify-center gap-2 rounded outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCapIcon className="size-4" />
+          <span className="flex size-8 items-center justify-center rounded-lg bg-white ring-1 ring-border">
+            <BrandLogo className="size-6" />
           </span>
           <span className="text-sm font-semibold tracking-tight">
             ITUC Workspace

@@ -20,14 +20,10 @@
 import { useCallback, useSyncExternalStore, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  GraduationCapIcon,
-  LogOutIcon,
-  MenuIcon,
-  PanelLeftIcon,
-} from "lucide-react";
+import { LogOutIcon, MenuIcon, PanelLeftIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -145,8 +141,8 @@ export function AppShell({
         collapsed && "justify-center",
       )}
     >
-      <span className="brand-mark flex size-9 shrink-0 items-center justify-center rounded-xl text-white">
-        <GraduationCapIcon className="size-5" />
+      <span className="brand-mark flex size-9 shrink-0 items-center justify-center rounded-xl">
+        <BrandLogo className="size-7" />
       </span>
       <span
         className={cn(

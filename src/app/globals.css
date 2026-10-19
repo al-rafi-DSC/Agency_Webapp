@@ -471,9 +471,10 @@
     pointer-events: none;
   }
 
+  /* White tile: the logo's charcoal mark needs a light surface. */
   .glass-mark {
-    background: linear-gradient(135deg, #7c3aed, #c026d3);
-    box-shadow: 0 0 24px rgb(124 58 237 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.3);
+    background: #ffffff;
+    box-shadow: 0 0 24px rgb(124 58 237 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.06);
   }
 
   /* Fields: a touch of fill so they read as inputs on the glass. */
@@ -543,9 +544,10 @@
       var(--sidebar);
   }
 
+  /* White tile: the logo's charcoal mark needs a light surface. */
   .brand-mark {
-    background: linear-gradient(135deg, #7c3aed, #c026d3);
-    box-shadow: 0 0 22px rgb(124 58 237 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.3);
+    background: #ffffff;
+    box-shadow: 0 0 22px rgb(124 58 237 / 0.55), inset 0 0 0 1px rgb(0 0 0 / 0.06);
   }
 
   .nav-active {
