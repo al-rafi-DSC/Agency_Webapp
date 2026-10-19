@@ -53,7 +53,7 @@ export default async function StaffDashboardPage() {
             <>
               <Button
                 nativeButton={false}
-                className="bg-white text-violet-700 shadow-lg hover:bg-white/90"
+                className="bg-[#ecb212] text-[#1a1a1a] shadow-lg hover:bg-[#f5c842]"
                 render={
                   <Link href="/staff/students/new">
                     <FolderPlusIcon />

@@ -567,7 +567,11 @@
       radial-gradient(40rem 18rem at 0% -6rem, oklch(0.5 0.2 330 / 0.12), transparent 70%);
   }
 
-  /* Dashboard welcome banner — the same scene as sign-in, in both modes. */
+  /*
+   * Dashboard welcome banner — the logo's colours, in both modes: flat
+   * charcoal with a gold stripe down the left edge (the tassel), gold for the
+   * main action and the headline numbers. No glow, on purpose.
+   */
   .hero-banner {
     position: relative;
     isolation: isolate;
@@ -575,10 +579,10 @@
     border-radius: 1.5rem;
     color: #fff;
     background:
-      radial-gradient(40rem 20rem at 100% 0%, rgb(217 70 239 / 0.55), transparent 60%),
-      radial-gradient(30rem 18rem at 0% 100%, rgb(79 70 229 / 0.55), transparent 60%),
-      linear-gradient(135deg, #2e1065 0%, #5b21b6 50%, #86198f 100%);
-    box-shadow: 0 24px 48px -24px rgb(76 29 149 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.15);
+      linear-gradient(90deg, #ecb212 0 6px, transparent 6px),
+      radial-gradient(30rem 16rem at 100% 0%, rgb(255 255 255 / 0.06), transparent 60%),
+      #1f1f1f;
+    box-shadow: 0 20px 40px -24px rgb(0 0 0 / 0.9);
   }
   .hero-banner::before {
     content: "";
@@ -586,16 +590,17 @@
     inset: 0;
     z-index: -1;
     background-image:
-      linear-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
     background-size: 36px 36px;
     mask-image: radial-gradient(ellipse at 80% 20%, black 10%, transparent 70%);
   }
   .hero-chip {
-    background: rgb(255 255 255 / 0.1);
-    border: 1px solid rgb(255 255 255 / 0.16);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    background: #2a2a2a;
+    border: 1px solid #383838;
+  }
+  .hero-value {
+    color: #ecb212;
   }
 
   /* Stat tiles lift slightly on hover; motion is skipped by reduced-motion. */

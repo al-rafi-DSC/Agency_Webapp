@@ -2,9 +2,9 @@
  * The welcome banner at the top of a dashboard.
  *
  * Presentational: the page hands over the name, the date label, the headline
- * counts and the action links. It always renders the violet sign-in scene
- * (`.hero-banner` in globals.css), in light and dark mode alike, so its text is
- * white by design rather than read from the theme tokens.
+ * counts and the action links. It always renders the logo's charcoal-and-gold
+ * scene (`.hero-banner` in globals.css), in light and dark mode alike, so its
+ * text is white by design rather than read from the theme tokens.
  */
 
 import type { ReactNode } from "react";
@@ -55,7 +55,7 @@ export function DashboardHero({
                   <item.icon className="size-3.5" aria-hidden />
                   {item.label}
                 </dt>
-                <dd className="mt-1 text-2xl font-bold tabular-nums">{item.value}</dd>
+                <dd className="hero-value mt-1 text-2xl font-bold tabular-nums">{item.value}</dd>
               </div>
             ))}
           </dl>
