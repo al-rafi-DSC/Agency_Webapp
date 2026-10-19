@@ -1,5 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
+import { ExternalLinkIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,7 +35,12 @@ export function StudentDetailsFields({ student = {} }: { student?: Partial<Stude
       <TextField name="email" label="Personal Gmail" value={student.email ?? ""} type="email" maxLength={320} />
       <TextField name="agency_email" label="Student Gmail" value={student.agency_email ?? ""} type="email" maxLength={320} />
       <TextField name="passport_number" label="Passport / Carta d'Identità number" value={student.passport_number ?? ""} maxLength={60} />
-      <TextField name="tax_code" label="Codice fiscale / tax code" value={student.tax_code ?? ""} maxLength={40} />
+      <div className="space-y-2"><div className="flex items-center justify-between gap-2">
+        <Label htmlFor="field-tax_code">Codice fiscale / tax code</Label>
+        <a href="https://www.codicefiscaleonline.com/" target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline">
+          Generate it Online <ExternalLinkIcon className="size-3" aria-hidden /></a></div>
+        <Input id="field-tax_code" name="tax_code" defaultValue={student.tax_code ?? ""} maxLength={40} /></div>
       <TextField name="date_of_birth" label="Date of birth" value={student.date_of_birth ?? ""} type="date" />
       <TextField name="birth_place" label="Birth place" value={student.birth_place ?? ""} maxLength={200} />
     </Section>
