@@ -7,7 +7,8 @@
  * Presentational. The list arrives already scoped by RLS, so staff only ever
  * see their own closed files, and the filters narrow it in memory — they can
  * only hide rows the viewer could already see. Opening a row goes to the
- * read-only student page, where an admin can reopen it.
+ * read-only student page, where an admin can reopen it. The Admin page also
+ * passes `deleteAction`, which adds a permanent Delete to each row.
  */
 
 import Link from "next/link";
@@ -19,9 +20,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { Panel } from "@/components/panel";
+import { DeleteClosedFileDialog } from "@/components/students/delete-closed-file-dialog";
 import { FilterSelect } from "@/components/students/students-explorer";
 import { APPLICANT_TYPE_LABELS, assignedWorkers, type StudentWithApplications } from "@/types/db";
-import type { ClosedStudentFile } from "@/types/workspace";
+import type { ActionState, ClosedStudentFile } from "@/types/workspace";
 
 const ALL = "all";
 const UNASSIGNED = "unassigned";
@@ -55,6 +57,7 @@ export function ClosedFilesList({
   studentBasePath,
   emptyDescription,
   showWorkerFilter = false,
+  deleteAction,
 }: {
   files: ClosedStudentFile[];
   /** Where a student link points, e.g. "/admin/students". A string, not a function: this is a client component. */
@@ -62,6 +65,8 @@ export function ClosedFilesList({
   emptyDescription: string;
   /** Admin only — a worker's list holds only their own files. */
   showWorkerFilter?: boolean;
+  /** Admin only. A server action, bound to each row's id here. */
+  deleteAction?: (studentId: string, state: ActionState, data: FormData) => Promise<ActionState>;
 }) {
   const [query, setQuery] = useState("");
   const [closedYear, setClosedYear] = useState<string>(ALL);
@@ -205,7 +210,7 @@ export function ClosedFilesList({
                   >
                     <FolderClosedIcon className="size-3.5" />
                   </span>
-                  <div className="min-w-0 space-y-0.5">
+                  <div className="min-w-0 flex-1 space-y-0.5">
                     <Link
                       href={`${studentBasePath}/${student.id}`}
                       className="rounded text-sm font-medium break-words underline underline-offset-4 outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -225,6 +230,12 @@ export function ClosedFilesList({
                       ].filter(Boolean).join(" · ")}
                     </p>
                   </div>
+                  {deleteAction ? (
+                    <DeleteClosedFileDialog
+                      action={deleteAction.bind(null, student.id)}
+                      studentName={student.full_name}
+                    />
+                  ) : null}
                 </li>
               );
             })}

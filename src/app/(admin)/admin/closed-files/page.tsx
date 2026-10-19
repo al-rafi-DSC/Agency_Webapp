@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
 import { ClosedFilesList } from "@/components/students/closed-files-list";
 import { getClosedStudents } from "@/lib/supabase/workspace";
+import { deleteClosedStudentFileAction } from "@/app/workspace/actions";
 
 export const metadata: Metadata = { title: "Closed files" };
 
@@ -14,12 +15,13 @@ export default async function AdminClosedFilesPage() {
     <>
       <PageHeader
         title="Closed files"
-        description="Student files closed by an admin or their worker. They are left out of dashboards and the Students list. Open one to reopen it."
+        description="Student files closed by an admin or their worker. They are left out of dashboards and the Students list. Open one to reopen it, or delete it permanently."
       />
       <ClosedFilesList
         files={files}
         studentBasePath="/admin/students"
         showWorkerFilter
+        deleteAction={deleteClosedStudentFileAction}
         emptyDescription="When a student file is closed, it moves here."
       />
     </>

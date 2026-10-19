@@ -134,6 +134,13 @@ removes one from the worker's page (Workers → name → Remove worker), through
   characters. `reopen_student_file(id)`: admin only. A closed file stays
   visible to the same people but `can_write_student()` refuses every write,
   for admins too. Each close/reopen also adds a note to the file.
+- `delete_closed_student_file(id, confirm_name)` (2026-10-19, migration
+  `20261019100000_delete_closed_student_file.sql`): admin only, closed files
+  only, and `confirm_name` must match the file's full name (case and outer
+  spaces ignored). Permanently deletes the file with its applications,
+  application history, notes, document records, assignments and linked form
+  submission. The only delete path — `authenticated` has no DELETE grant on
+  these tables. Offered on the Admin Closed files page.
 
 ## Student file fields and new-file notifications (2026-10-04)
 

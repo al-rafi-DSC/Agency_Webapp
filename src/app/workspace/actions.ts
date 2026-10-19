@@ -178,6 +178,15 @@ export async function reopenStudentFileAction(studentId: string, _state: ActionS
   });
 }
 
+/** Admin only, closed files only, permanent. The database checks the typed name against the file. */
+export async function deleteClosedStudentFileAction(studentId: string, _state: ActionState, data: FormData): Promise<ActionState> {
+  void _state;
+  return mutate(true, async (client) => {
+    const { error } = await client.rpc("delete_closed_student_file", { p_id: uuid(studentId), p_confirm_name: textField(data, "confirm_name", 200, 1) });
+    check(error);
+  });
+}
+
 export async function saveWorkerAction(workerId: string, _state: ActionState, data: FormData): Promise<ActionState> {
   return mutate(true, async (client) => {
     const status = textField(data, "status", 20);

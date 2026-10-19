@@ -106,6 +106,15 @@ alerts), the Applications page and the Students / My students lists, and is list
 global search still finds it. Readers: `getOpenStudents()` /
 `getClosedStudents()`. App-only — no migration; RLS scoping is unchanged.
 
+**Added 2026-10-19** — the one exception to "records are never deleted": an
+Admin can **permanently delete a closed student file** from Admin → Closed
+files, after typing the student's full name. It erases the file with its
+applications, history, notes, document records, assignments and linked form
+submission; nothing can be restored. Archiving stays the default way to hide a
+file. Enforced in `delete_closed_student_file()` (admin + closed + name match).
+Migration `20261019100000_delete_closed_student_file.sql` (additive — apply
+before deploying the app code).
+
 Internal workspace for a study-abroad/education agency. The owner (Admin)
 hires and monitors staff, who each manage an assigned subset of students
 through a per-university application pipeline. Full detail in `PRD.md`.
