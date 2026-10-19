@@ -1,5 +1,5 @@
 /**
- * Domain types for Agency Workspace — mirrors PRD.md §5 (Data Model v1 sketch).
+ * Domain types for ITUC Workspace — mirrors PRD.md §5 (Data Model v1 sketch).
  *
  * Hand-written read models used by both the live data adapter and preview.
  * SQL schema: supabase/migrations/20260910130000_workspace_data.sql.

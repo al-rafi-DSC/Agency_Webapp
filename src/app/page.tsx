@@ -35,7 +35,7 @@ export default async function Home() {
         </span>
 
         <h1 className="text-2xl font-semibold tracking-tight">
-          Agency Workspace
+          ITUC Workspace
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Student files and university applications, for the whole agency.

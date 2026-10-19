@@ -49,7 +49,7 @@ export function AuthCard({
               <GraduationCapIcon className="size-4.5" />
             </span>
             <span className="text-sm font-semibold tracking-tight text-white">
-              Agency Workspace
+              ITUC Workspace
             </span>
           </Link>
 
@@ -85,7 +85,7 @@ export function AuthCard({
             <GraduationCapIcon className="size-4" />
           </span>
           <span className="text-sm font-semibold tracking-tight">
-            Agency Workspace
+            ITUC Workspace
           </span>
         </Link>
 

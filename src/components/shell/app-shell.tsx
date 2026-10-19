@@ -155,7 +155,7 @@ export function AppShell({
         )}
       >
         <span className="truncate text-sm leading-tight font-bold tracking-tight">
-          Agency Workspace
+          ITUC Workspace
         </span>
         <span className="truncate text-xs leading-tight text-sidebar-foreground/60">
           {workspaceLabel}

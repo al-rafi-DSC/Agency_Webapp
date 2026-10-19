@@ -31,8 +31,8 @@ export function StudentDetailsFields({ student = {} }: { student?: Partial<Stude
   const charge = student.file_opening_charge_percent;
   return <>
     <Section title="Contact and identity">
-      <TextField name="email" label="Student Gmail" value={student.email ?? ""} type="email" maxLength={320} />
-      <TextField name="agency_email" label="Agency Gmail for student" value={student.agency_email ?? ""} type="email" maxLength={320} />
+      <TextField name="email" label="Personal Gmail" value={student.email ?? ""} type="email" maxLength={320} />
+      <TextField name="agency_email" label="Student Gmail" value={student.agency_email ?? ""} type="email" maxLength={320} />
       <TextField name="passport_number" label="Passport / Carta d'Identità number" value={student.passport_number ?? ""} maxLength={60} />
       <TextField name="tax_code" label="Codice fiscale / tax code" value={student.tax_code ?? ""} maxLength={40} />
       <TextField name="date_of_birth" label="Date of birth" value={student.date_of_birth ?? ""} type="date" />

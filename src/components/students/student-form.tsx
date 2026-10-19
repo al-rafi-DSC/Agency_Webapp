@@ -30,7 +30,6 @@ export function StudentForm({ staff, defaultFileOpenedAt, cancelHref, action, is
         : <div className="space-y-2"><p className="text-sm font-medium">File opened</p><p className="text-sm">{formatDate(defaultFileOpenedAt)}</p></div>}
       <SelectField name="applicant_type" label="Applicant from" options={[{ value: "", label: "Not set" }, ...APPLICANT_TYPE_OPTIONS]} />
       {isAdmin ? <>
-        <div className="sm:col-span-2"><TextField name="drive_link" label="Drive link (optional)" type="url" maxLength={2048} /></div>
         <div className="sm:col-span-2 space-y-2">
           <SelectField name="worker_id" label="Assign worker" options={[{ value: "", label: "Unassigned" }, ...active.map((w) => ({ value: w.id, label: w.full_name }))]} />
           <p className="text-sm text-muted-foreground">{active.length ? "You can add or change workers later on the student file." : "Invite a worker to start assigning files."}</p>

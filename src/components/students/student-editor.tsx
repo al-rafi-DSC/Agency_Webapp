@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/format";
 import type { StudentWithApplications } from "@/types/db";
 import type { FormAction } from "@/types/workspace";
 
-/** `isAdmin` only shapes the form; the database rejects a non-admin change to the date or Drive link regardless. */
+/** `isAdmin` only shapes the form; the database rejects a non-admin change to the date regardless. */
 export function StudentEditor({ student, action, isAdmin }: { student: StudentWithApplications; action: FormAction; isAdmin: boolean }) {
   return <MutationForm action={action} submitLabel="Save student details" className="surface-panel p-5"><div className="grid gap-4 sm:grid-cols-2">
     <TextField name="first_name" label="Name" value={student.first_name ?? student.full_name} required minLength={1} maxLength={100} />
@@ -19,14 +19,7 @@ export function StudentEditor({ student, action, isAdmin }: { student: StudentWi
         <p className="text-xs text-muted-foreground">Only an admin can change this date.</p></div>}
     <SelectField name="applicant_type" label="Applicant from" defaultValue={student.applicant_type ?? ""}
       options={[{ value: "", label: "Not set" }, ...APPLICANT_TYPE_OPTIONS]} />
-    {isAdmin ? <TextField name="drive_link" label="Drive link (HTTPS, optional)" value={student.drive_link ?? ""} type="url" maxLength={2048} />
-      : <div className="space-y-2"><p className="text-sm font-medium">Drive link</p>
-        {student.drive_link ? <a href={student.drive_link} target="_blank" rel="noopener noreferrer"
-          className="block truncate text-sm text-primary underline-offset-4 hover:underline">{student.drive_link}</a>
-          : <p className="text-sm text-muted-foreground">Not added yet.</p>}
-        <p className="text-xs text-muted-foreground">Only an admin can change it.</p></div>}
     <TextField name="student_drive_link" label="Student Drive Link (HTTPS, optional)" value={student.student_drive_link ?? ""} type="url" maxLength={2048} />
-    <TextField name="photo_url" label="Photo URL (HTTPS, optional)" value={student.photo_url ?? ""} type="url" maxLength={2048} />
     <StudentDetailsFields student={student} />
   </div></MutationForm>;
 }

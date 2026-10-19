@@ -54,7 +54,7 @@ function choice<T extends string>(data: FormData, name: string, labels: Record<T
 /** The optional detail fields from StudentDetailsFields. Hidden visa and sponsor boxes are absent from the form, so they clear. */
 function studentDetails(data: FormData) {
   const agencyEmail = textField(data, "agency_email", 320);
-  if (agencyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agencyEmail)) throw new Error("Enter a valid agency Gmail address.");
+  if (agencyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agencyEmail)) throw new Error("Enter a valid student Gmail address.");
   const chargeText = textField(data, "file_opening_charge_percent", 10).replace("%", "").trim();
   const charge = chargeText ? Number(chargeText) : null;
   if (charge !== null && (!Number.isFinite(charge) || charge < 0 || charge > 100)) throw new Error("Enter the file opening charge as a percentage from 0 to 100.");
@@ -110,7 +110,7 @@ export async function updateStudentAction(studentId: string, _state: ActionState
     // Staff forms omit the file-opened date and Drive link; database triggers reject a non-admin change anyway.
     const { data: row, error } = await client.from("students").update({
       first_name: textField(data, "first_name", 100, 1), surname: textField(data, "surname", 100, 1),
-      phone: textField(data, "phone", 80), photo_url: urlField(data, "photo_url", true),
+      phone: textField(data, "phone", 80),
       applicant_type: applicantType(data, false), gender: gender || null, ...studentDetails(data),
       ...(data.has("file_opened_at") ? { file_opened_at: dateField(data, "file_opened_at", true) } : {}),
       ...(data.has("drive_link") ? { drive_link: urlField(data, "drive_link", true) } : {}),

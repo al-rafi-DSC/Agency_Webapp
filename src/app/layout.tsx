@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Agency Workspace",
-    template: "%s · Agency Workspace",
+    default: "ITUC Workspace",
+    template: "%s · ITUC Workspace",
   },
   description: "Internal student application workspace.",
 };
