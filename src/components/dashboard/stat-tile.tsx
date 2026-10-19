@@ -22,8 +22,8 @@ export type StatTone = "default" | "info" | "success" | "warning" | "danger";
 
 const TONE_CLASSES: Record<StatTone, { badge: string; glow: string }> = {
   default: {
-    badge: "from-violet-500 to-fuchsia-500 shadow-violet-500/40",
-    glow: "bg-violet-500",
+    badge: "from-[#f5c842] to-[#d99a06] text-[#1a1a1a] shadow-[#ecb212]/40",
+    glow: "bg-[#ecb212]",
   },
   info: {
     badge: "from-sky-500 to-cyan-400 shadow-sky-500/40",

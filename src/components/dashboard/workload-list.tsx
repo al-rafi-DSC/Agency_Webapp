@@ -74,7 +74,7 @@ export function WorkloadList({
                 <span
                   className={cn(
                     "block h-full rounded-full transition-[width] duration-300 ease-out",
-                    row.studentCount === 0 ? "bg-transparent" : "bg-gradient-to-r from-violet-500 to-fuchsia-500",
+                    row.studentCount === 0 ? "bg-transparent" : "bg-gradient-to-r from-[#f5c842] to-[#d99a06]",
                   )}
                   style={{ width: `${Math.round(row.loadRatio * 100)}%` }}
                 />

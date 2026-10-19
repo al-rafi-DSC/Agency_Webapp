@@ -71,7 +71,7 @@ export function SidebarNav({
                 <span
                   aria-hidden
                   className={cn(
-                    "absolute -left-3 h-6 w-1 rounded-r-full bg-gradient-to-b from-violet-300 to-fuchsia-400 transition-opacity duration-150",
+                    "absolute -left-3 h-6 w-1 rounded-r-full bg-gradient-to-b from-[#f5c842] to-[#d99a06] transition-opacity duration-150",
                     active ? "opacity-100" : "opacity-0",
                   )}
                 />
@@ -79,7 +79,7 @@ export function SidebarNav({
                   className={cn(
                     "size-4 shrink-0 transition-colors",
                     active
-                      ? "text-violet-200"
+                      ? "text-[#f5c842]"
                       : "text-sidebar-foreground/55 group-hover/nav:text-sidebar-foreground",
                   )}
                 />

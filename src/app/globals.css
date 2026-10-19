@@ -9,8 +9,10 @@
  *
  * Two families of colour, and the difference matters:
  *
- *   BRAND (--primary, indigo)  identifies the product. Primary actions and the
- *     active navigation item. Used sparingly, so it keeps meaning something.
+ *   BRAND (--primary)  identifies the product, in the logo's colours: charcoal
+ *     #222222 in light mode, gold #ECB212 in dark mode, with gold for focus
+ *     rings, soft highlights and the active navigation item. Used sparingly, so
+ *     it keeps meaning something.
  *
  *   SEMANTIC (--success / --warning / --info / --destructive)  carries meaning
  *     about state. Every one has a `-soft` surface + `-soft-foreground` pair,
@@ -92,26 +94,27 @@
 }
 
 :root {
-  /* Violet brand, matching the glass sign-in scene (#7c3aed), so signing in
-     and working feel like one product. Neutrals carry a faint violet tint. */
-  --background: oklch(0.984 0.005 293);
-  --foreground: oklch(0.2 0.03 293);
+  /* Charcoal and gold, from the IT Uni Consultancy logo, matching the sign-in
+     scene so signing in and working feel like one product. Neutrals carry a
+     faint warm tint so the gold sits naturally. */
+  --background: oklch(0.985 0.003 85);
+  --foreground: oklch(0.2 0.005 85);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.03 293);
+  --card-foreground: oklch(0.2 0.005 85);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.03 293);
+  --popover-foreground: oklch(0.2 0.005 85);
 
-  --primary: oklch(0.541 0.247 293);
-  --primary-foreground: oklch(0.99 0.005 293);
-  --primary-soft: oklch(0.955 0.032 293);
-  --primary-soft-foreground: oklch(0.45 0.21 293);
+  --primary: oklch(0.255 0 0);
+  --primary-foreground: oklch(0.99 0 0);
+  --primary-soft: oklch(0.962 0.05 92);
+  --primary-soft-foreground: oklch(0.45 0.095 75);
 
-  --secondary: oklch(0.965 0.008 293);
-  --secondary-foreground: oklch(0.25 0.03 293);
-  --muted: oklch(0.965 0.008 293);
-  --muted-foreground: oklch(0.52 0.025 293);
-  --accent: oklch(0.955 0.02 293);
-  --accent-foreground: oklch(0.38 0.15 293);
+  --secondary: oklch(0.965 0.004 85);
+  --secondary-foreground: oklch(0.25 0.005 85);
+  --muted: oklch(0.965 0.004 85);
+  --muted-foreground: oklch(0.52 0.01 85);
+  --accent: oklch(0.958 0.025 90);
+  --accent-foreground: oklch(0.38 0.07 75);
 
   --success: oklch(0.58 0.135 155);
   --success-foreground: oklch(0.99 0.01 155);
@@ -159,9 +162,9 @@
   --viz-accepted: oklch(0.625 0.15 148);
   --viz-rejected: oklch(0.5 0.2 27);
 
-  --border: oklch(0.918 0.012 293);
-  --input: oklch(0.9 0.015 293);
-  --ring: oklch(0.541 0.247 293);
+  --border: oklch(0.915 0.006 85);
+  --input: oklch(0.89 0.008 85);
+  --ring: oklch(0.8 0.16 85);
 
   /* Categorical ramp — distinguishable by hue AND by lightness, so the
      pipeline visuals survive greyscale printing and colour-vision deficiency. */
@@ -173,36 +176,36 @@
 
   --radius: 0.75rem;
 
-  /* The sidebar is the same deep-violet scene in light and dark mode. */
-  --sidebar: oklch(0.19 0.06 295);
-  --sidebar-foreground: oklch(0.94 0.02 293);
-  --sidebar-primary: oklch(0.72 0.17 300);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
+  /* The sidebar is the same charcoal scene in light and dark mode. */
+  --sidebar: oklch(0.215 0 0);
+  --sidebar-foreground: oklch(0.94 0.005 85);
+  --sidebar-primary: oklch(0.8 0.16 85);
+  --sidebar-primary-foreground: oklch(0.2 0 0);
   --sidebar-accent: oklch(1 0 0 / 9%);
   --sidebar-accent-foreground: oklch(0.99 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.72 0.17 300);
+  --sidebar-ring: oklch(0.8 0.16 85);
 }
 
 .dark {
-  --background: oklch(0.155 0.028 293);
-  --foreground: oklch(0.962 0.008 293);
-  --card: oklch(0.195 0.034 293);
-  --card-foreground: oklch(0.962 0.008 293);
-  --popover: oklch(0.215 0.036 293);
-  --popover-foreground: oklch(0.962 0.008 293);
+  --background: oklch(0.16 0.003 85);
+  --foreground: oklch(0.962 0.004 85);
+  --card: oklch(0.2 0.004 85);
+  --card-foreground: oklch(0.962 0.004 85);
+  --popover: oklch(0.22 0.004 85);
+  --popover-foreground: oklch(0.962 0.004 85);
 
-  --primary: oklch(0.7 0.18 293);
-  --primary-foreground: oklch(0.16 0.04 293);
-  --primary-soft: oklch(0.3 0.08 293);
-  --primary-soft-foreground: oklch(0.86 0.1 293);
+  --primary: oklch(0.8 0.16 85);
+  --primary-foreground: oklch(0.2 0.01 85);
+  --primary-soft: oklch(0.3 0.06 85);
+  --primary-soft-foreground: oklch(0.87 0.12 88);
 
-  --secondary: oklch(0.255 0.035 293);
-  --secondary-foreground: oklch(0.962 0.008 293);
-  --muted: oklch(0.255 0.035 293);
-  --muted-foreground: oklch(0.72 0.03 293);
-  --accent: oklch(0.29 0.05 293);
-  --accent-foreground: oklch(0.93 0.04 293);
+  --secondary: oklch(0.25 0.004 85);
+  --secondary-foreground: oklch(0.962 0.004 85);
+  --muted: oklch(0.25 0.004 85);
+  --muted-foreground: oklch(0.72 0.01 85);
+  --accent: oklch(0.29 0.02 85);
+  --accent-foreground: oklch(0.93 0.04 88);
 
   --success: oklch(0.7 0.145 155);
   --success-foreground: oklch(0.18 0.04 155);
@@ -236,7 +239,7 @@
 
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.65 0.18 293);
+  --ring: oklch(0.75 0.15 85);
 
   --chart-1: oklch(0.68 0.16 274);
   --chart-2: oklch(0.71 0.13 245);
@@ -244,14 +247,14 @@
   --chart-4: oklch(0.81 0.13 72);
   --chart-5: oklch(0.72 0.15 305);
 
-  --sidebar: oklch(0.135 0.04 295);
-  --sidebar-foreground: oklch(0.94 0.02 293);
-  --sidebar-primary: oklch(0.72 0.17 300);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar: oklch(0.145 0 0);
+  --sidebar-foreground: oklch(0.94 0.005 85);
+  --sidebar-primary: oklch(0.8 0.16 85);
+  --sidebar-primary-foreground: oklch(0.2 0 0);
   --sidebar-accent: oklch(1 0 0 / 9%);
   --sidebar-accent-foreground: oklch(0.99 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.72 0.17 300);
+  --sidebar-ring: oklch(0.8 0.16 85);
 }
 
 @layer base {
@@ -339,8 +342,8 @@
   .surface-panel {
     @apply rounded-2xl border bg-card text-card-foreground;
     box-shadow:
-      0 1px 2px 0 oklch(0.3 0.06 293 / 0.04),
-      0 8px 24px -12px oklch(0.3 0.1 293 / 0.12);
+      0 1px 2px 0 oklch(0.3 0 0 / 0.04),
+      0 8px 24px -12px oklch(0.3 0 0 / 0.12);
   }
   .dark .surface-panel {
     box-shadow:
@@ -350,7 +353,8 @@
 }
 
 /*
- * Glass sign-in scene — /login and /join (AuthCard variant="glass").
+ * Glass sign-in scene — /login and /join (AuthCard variant="glass"),
+ * charcoal with gold light, in the logo's colours.
  *
  * Always a dark scene, in light and dark mode alike, so the tokens below are
  * set on the scene itself and override whatever the <html> theme says. The
@@ -362,29 +366,29 @@
  */
 @layer components {
   .theme-glass {
-    --background: #0d0518;
-    --foreground: #f6f1ff;
+    --background: #111111;
+    --foreground: #f5f5f4;
     --card: rgb(255 255 255 / 0.06);
-    --card-foreground: #f6f1ff;
-    --primary: #7c3aed;
-    --primary-foreground: #ffffff;
+    --card-foreground: #f5f5f4;
+    --primary: #ecb212;
+    --primary-foreground: #1a1a1a;
     --muted: rgb(255 255 255 / 0.08);
-    --muted-foreground: rgb(226 214 255 / 0.72);
+    --muted-foreground: rgb(231 229 228 / 0.7);
     --border: rgb(255 255 255 / 0.14);
     --input: rgb(255 255 255 / 0.18);
-    --ring: #a78bfa;
+    --ring: #ecb212;
     --destructive: #fda4af;
-    --success-soft: rgb(167 139 250 / 0.2);
-    --success-soft-foreground: #e9ddff;
+    --success-soft: rgb(236 178 18 / 0.18);
+    --success-soft-foreground: #fde68a;
     color-scheme: dark;
   }
 
   .glass-scene {
     min-height: 100svh;
     background:
-      radial-gradient(60rem 40rem at 10% -10%, rgb(88 28 135 / 0.55), transparent 60%),
-      radial-gradient(50rem 36rem at 110% 110%, rgb(59 7 100 / 0.7), transparent 60%),
-      linear-gradient(160deg, #150726 0%, #0d0518 55%, #08030f 100%);
+      radial-gradient(60rem 40rem at 10% -10%, rgb(236 178 18 / 0.14), transparent 60%),
+      radial-gradient(50rem 36rem at 110% 110%, rgb(120 90 20 / 0.25), transparent 60%),
+      linear-gradient(160deg, #1f1f1f 0%, #141414 55%, #0b0b0b 100%);
   }
 
   /* A faint grid so the frosted card has something to blur. */
@@ -410,7 +414,7 @@
     position: absolute;
     border-radius: 9999px;
     filter: blur(70px);
-    opacity: 0.75;
+    opacity: 0.5;
     animation: glass-drift 18s ease-in-out infinite alternate;
   }
   .glass-orb-1 {
@@ -418,14 +422,14 @@
     height: 26rem;
     top: -6rem;
     left: -6rem;
-    background: radial-gradient(circle, #7e22ce, transparent 70%);
+    background: radial-gradient(circle, rgb(236 178 18 / 0.55), transparent 70%);
   }
   .glass-orb-2 {
     width: 22rem;
     height: 22rem;
     bottom: -5rem;
     right: -4rem;
-    background: radial-gradient(circle, #c026d3, transparent 70%);
+    background: radial-gradient(circle, rgb(180 125 10 / 0.6), transparent 70%);
     animation-duration: 22s;
     animation-delay: -6s;
   }
@@ -434,7 +438,7 @@
     height: 16rem;
     top: 45%;
     left: 60%;
-    background: radial-gradient(circle, #4c1d95, transparent 70%);
+    background: radial-gradient(circle, #3f3f46, transparent 70%);
     animation-duration: 26s;
     animation-delay: -12s;
   }
@@ -443,7 +447,7 @@
     to { transform: translate3d(3rem, 2rem, 0) scale(1.12); }
   }
 
-  /* The card: frosted fill, hairline light edge, dark-purple shadow glow. */
+  /* The card: frosted fill, hairline light edge, soft gold shadow glow. */
   .glass-panel {
     position: relative;
     border-radius: 1.5rem;
@@ -452,9 +456,9 @@
     -webkit-backdrop-filter: blur(22px) saturate(160%);
     backdrop-filter: blur(22px) saturate(160%);
     box-shadow:
-      0 0 0 1px rgb(59 7 100 / 0.55),
-      0 0 32px 2px rgb(76 29 149 / 0.55),
-      0 30px 70px -18px rgb(30 4 56 / 0.95),
+      0 0 0 1px rgb(0 0 0 / 0.5),
+      0 0 32px 2px rgb(236 178 18 / 0.12),
+      0 30px 70px -18px rgb(0 0 0 / 0.95),
       inset 0 1px 0 rgb(255 255 255 / 0.18);
   }
   /* A light sheen along the top edge. */
@@ -464,7 +468,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(160deg, rgb(216 180 254 / 0.6), transparent 40%, transparent 70%, rgb(192 38 211 / 0.35));
+    background: linear-gradient(160deg, rgb(253 230 138 / 0.5), transparent 40%, transparent 70%, rgb(236 178 18 / 0.3));
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -474,7 +478,7 @@
   /* White tile: the logo's charcoal mark needs a light surface. */
   .glass-mark {
     background: #ffffff;
-    box-shadow: 0 0 24px rgb(124 58 237 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.06);
+    box-shadow: 0 0 24px rgb(236 178 18 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.06);
   }
 
   /* Fields: a touch of fill so they read as inputs on the glass. */
@@ -492,28 +496,29 @@
   .theme-glass [data-slot="textarea"]:focus-visible,
   .theme-glass [data-slot="select-trigger"]:focus-visible {
     background-color: rgb(255 255 255 / 0.1);
-    border-color: #a78bfa;
-    box-shadow: 0 0 0 3px rgb(167 139 250 / 0.25), 0 0 18px rgb(124 58 237 / 0.35);
+    border-color: #ecb212;
+    box-shadow: 0 0 0 3px rgb(236 178 18 / 0.22), 0 0 18px rgb(236 178 18 / 0.2);
   }
   .theme-glass [data-slot="textarea"] {
     padding-block: 0.625rem;
   }
 
-  /* Primary action: violet → fuchsia, with the same purple glow as the card. */
+  /* Primary action: the logo's gold, with charcoal text. */
   .theme-glass [data-slot="button"][type="submit"] {
     min-height: 2.75rem;
     border-radius: 0.75rem;
-    background: linear-gradient(135deg, #6d28d9, #a21caf);
-    box-shadow: 0 10px 30px -8px rgb(109 40 217 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.25);
+    background: linear-gradient(135deg, #f5c842, #d99a06);
+    color: #1a1a1a;
+    box-shadow: 0 10px 30px -8px rgb(236 178 18 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.35);
     transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
   }
   .theme-glass [data-slot="button"][type="submit"]:hover:not(:disabled) {
     filter: brightness(1.1);
-    box-shadow: 0 14px 36px -8px rgb(147 51 234 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.3);
+    box-shadow: 0 14px 36px -8px rgb(236 178 18 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.4);
   }
 
   .theme-glass a {
-    color: rgb(226 214 255 / 0.8);
+    color: rgb(253 230 138 / 0.85);
   }
   .theme-glass a:hover {
     color: #ffffff;
@@ -521,9 +526,9 @@
 }
 
 /*
- * Workspace chrome — the violet "aurora" look for the signed-in panels.
+ * Workspace chrome — charcoal and gold for the signed-in panels.
  *
- * The sidebar is always a dark violet scene (like the sign-in page), so the
+ * The sidebar is always a dark charcoal scene (like the sign-in page), so the
  * shared primitives inside it (ghost buttons, muted text) are re-pointed here
  * rather than given sidebar-specific copies. Tooltips and menus are portalled
  * outside this scope and keep the normal popover.
@@ -531,40 +536,35 @@
 @layer components {
   .workspace-sidebar {
     --muted: oklch(1 0 0 / 8%);
-    --muted-foreground: oklch(0.8 0.04 293 / 0.75);
+    --muted-foreground: oklch(0.82 0.01 85 / 0.75);
     --accent: oklch(1 0 0 / 9%);
     --accent-foreground: oklch(0.99 0 0);
-    --foreground: oklch(0.96 0.015 293);
+    --foreground: oklch(0.96 0.005 85);
     --border: oklch(1 0 0 / 8%);
-    --ring: oklch(0.72 0.17 300);
+    --ring: oklch(0.8 0.16 85);
     color-scheme: dark;
     background:
-      radial-gradient(28rem 22rem at -20% -10%, oklch(0.45 0.2 300 / 0.45), transparent 60%),
-      radial-gradient(22rem 18rem at 120% 105%, oklch(0.45 0.22 320 / 0.35), transparent 60%),
+      radial-gradient(28rem 22rem at -20% -10%, rgb(236 178 18 / 0.1), transparent 60%),
       var(--sidebar);
   }
 
   /* White tile: the logo's charcoal mark needs a light surface. */
   .brand-mark {
     background: #ffffff;
-    box-shadow: 0 0 22px rgb(124 58 237 / 0.55), inset 0 0 0 1px rgb(0 0 0 / 0.06);
+    box-shadow: 0 0 18px rgb(236 178 18 / 0.25), inset 0 0 0 1px rgb(0 0 0 / 0.06);
   }
 
   .nav-active {
-    background: linear-gradient(90deg, rgb(139 92 246 / 0.32), rgb(192 38 211 / 0.12));
-    box-shadow: inset 0 0 0 1px rgb(196 181 253 / 0.18), 0 6px 18px -8px rgb(124 58 237 / 0.7);
+    background: linear-gradient(90deg, rgb(236 178 18 / 0.18), rgb(236 178 18 / 0.05));
+    box-shadow: inset 0 0 0 1px rgb(236 178 18 / 0.22);
   }
 
-  /* A soft violet glow at the top of the content well. */
+  /* A faint gold glow at the top of the content well. */
   .workspace-canvas {
-    background:
-      radial-gradient(60rem 22rem at 70% -8rem, oklch(0.7 0.15 293 / 0.13), transparent 70%),
-      radial-gradient(40rem 18rem at 0% -6rem, oklch(0.75 0.12 330 / 0.08), transparent 70%);
+    background: radial-gradient(60rem 22rem at 70% -8rem, oklch(0.85 0.12 85 / 0.14), transparent 70%);
   }
   .dark .workspace-canvas {
-    background:
-      radial-gradient(60rem 22rem at 70% -8rem, oklch(0.5 0.2 293 / 0.22), transparent 70%),
-      radial-gradient(40rem 18rem at 0% -6rem, oklch(0.5 0.2 330 / 0.12), transparent 70%);
+    background: radial-gradient(60rem 22rem at 70% -8rem, oklch(0.6 0.12 85 / 0.1), transparent 70%);
   }
 
   /*
@@ -612,7 +612,7 @@
   .stat-tile:hover {
     transform: translateY(-2px);
     box-shadow:
-      0 1px 2px 0 oklch(0.3 0.06 293 / 0.05),
-      0 18px 36px -16px oklch(0.4 0.18 293 / 0.3);
+      0 1px 2px 0 oklch(0.3 0 0 / 0.05),
+      0 18px 36px -16px oklch(0.55 0.12 80 / 0.3);
   }
 }

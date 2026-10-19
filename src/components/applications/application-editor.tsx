@@ -24,7 +24,7 @@ export function ApplicationEditor({ application, statuses, action }: { applicati
   return <MutationForm action={action} submitLabel={application ? "Save application" : "Add university application"}
     className={application ? "surface-panel p-5" : "surface-panel border-dashed border-primary/40 p-5"}>
     <div className="flex flex-wrap items-center gap-3">
-      <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-md shadow-violet-500/30">
+      <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f5c842] to-[#d99a06] text-[#1a1a1a] shadow-md shadow-[#ecb212]/30">
         {application ? <GraduationCapIcon className="size-5" /> : <PlusIcon className="size-5" />}
       </span>
       <div className="min-w-0 flex-1">

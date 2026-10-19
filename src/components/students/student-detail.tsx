@@ -73,21 +73,21 @@ export function StudentDetail({
 
       <Tabs defaultValue="applications" className="gap-5">
         <TabsList className="h-auto! w-full justify-start gap-1 overflow-x-auto rounded-full! border bg-card p-1! shadow-sm sm:w-fit">
-          {detailsSlot ? <TabsTrigger value="details" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">Details</TabsTrigger> : null}
-          <TabsTrigger value="applications" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">
+          {detailsSlot ? <TabsTrigger value="details" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-[#f5c842] data-active:to-[#d99a06] data-active:text-[#1a1a1a]! data-active:shadow-md data-active:shadow-[#ecb212]/30 data-active:border-transparent!">Details</TabsTrigger> : null}
+          <TabsTrigger value="applications" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-[#f5c842] data-active:to-[#d99a06] data-active:text-[#1a1a1a]! data-active:shadow-md data-active:shadow-[#ecb212]/30 data-active:border-transparent!">
             Applications
             <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[0.6875rem] tabular-nums">
               {student.applications.length}
             </span>
           </TabsTrigger>
-          <TabsTrigger value="activity" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">Activity</TabsTrigger>
-          <TabsTrigger value="notes" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">
+          <TabsTrigger value="activity" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-[#f5c842] data-active:to-[#d99a06] data-active:text-[#1a1a1a]! data-active:shadow-md data-active:shadow-[#ecb212]/30 data-active:border-transparent!">Activity</TabsTrigger>
+          <TabsTrigger value="notes" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-[#f5c842] data-active:to-[#d99a06] data-active:text-[#1a1a1a]! data-active:shadow-md data-active:shadow-[#ecb212]/30 data-active:border-transparent!">
             Notes
             <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[0.6875rem] tabular-nums">
               {notes.length}
             </span>
           </TabsTrigger>
-          <TabsTrigger value="documents" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-violet-600 data-active:to-fuchsia-600 data-active:text-white! data-active:shadow-md data-active:shadow-violet-500/30 data-active:border-transparent!">Documents</TabsTrigger>
+          <TabsTrigger value="documents" className="h-auto! rounded-full! px-4 py-1.5 data-active:bg-gradient-to-r! data-active:from-[#f5c842] data-active:to-[#d99a06] data-active:text-[#1a1a1a]! data-active:shadow-md data-active:shadow-[#ecb212]/30 data-active:border-transparent!">Documents</TabsTrigger>
         </TabsList>
 
         <TabsContent value="applications" className="flex flex-col gap-3">

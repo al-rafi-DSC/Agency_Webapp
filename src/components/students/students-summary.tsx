@@ -81,7 +81,7 @@ export function StudentsSummary({
         icon={UsersIcon}
         label="Open files"
         value={students.length}
-        tone="from-violet-500 to-fuchsia-500 shadow-violet-500/30"
+        tone="from-[#f5c842] to-[#d99a06] text-[#1a1a1a] shadow-[#ecb212]/30"
       />
       {showUnassigned ? (
         <Chip

@@ -7,13 +7,13 @@
  */
 
 const TONES = [
-  "from-violet-500 to-fuchsia-500",
+  "from-neutral-600 to-neutral-800",
   "from-sky-500 to-indigo-500",
   "from-emerald-500 to-teal-500",
   "from-amber-500 to-orange-500",
   "from-rose-500 to-pink-500",
   "from-cyan-500 to-blue-500",
-  "from-purple-500 to-indigo-500",
+  "from-yellow-500 to-amber-600",
   "from-lime-500 to-emerald-500",
 ] as const;
 

@@ -37,7 +37,7 @@ export default async function AdminStudentsPage({
         actions={
           <Button
             nativeButton={false}
-            className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30 hover:opacity-95"
+            className="rounded-full bg-gradient-to-r from-[#f5c842] to-[#d99a06] text-[#1a1a1a] shadow-lg shadow-[#ecb212]/30 hover:opacity-95"
             render={
               <Link href="/admin/students/new">
                 <PlusIcon />

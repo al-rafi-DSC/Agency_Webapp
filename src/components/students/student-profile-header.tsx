@@ -76,7 +76,7 @@ export function StudentProfileHeader({
 
   return (
     <div className="surface-panel overflow-hidden">
-      {/* Cover — the same violet scene as the dashboard banner. */}
+      {/* Cover — the same charcoal-and-gold scene as the dashboard banner. */}
       <div aria-hidden className="hero-banner h-24 rounded-none shadow-none sm:h-28" />
 
       <div className="px-5 pb-5 sm:px-6 sm:pb-6">
